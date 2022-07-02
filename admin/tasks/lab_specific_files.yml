@@ -1,0 +1,25 @@
+common:
+  - .circleci/config.yml
+  - .gitignore
+  - environment.yml
+  - LICENSE.txt
+  - Makefile
+  - requirements/dev.in
+  - requirements/dev.txt
+  - requirements/prod.in
+  - requirements/prod.txt
+# keys are mapped to ints by yaml loading,
+#  so zero-filling here is not respected
+01:
+  - text_recognizer/__init__.py
+  - text_recognizer/util.py
+  - text_recognizer/data/__init__.py
+  - text_recognizer/data/base_data_module.py
+  - text_recognizer/data/mnist.py
+  - text_recognizer/data/util.py
+  - text_recognizer/lit_models/__init__.py
+  - text_recognizer/lit_models/base.py
+  - text_recognizer/models/__init__.py
+  - text_recognizer/models/mlp.py
+  - training/__init__.py
+  - training/run_experiment.py

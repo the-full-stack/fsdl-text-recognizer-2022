@@ -1,0 +1,64 @@
+repos:
+  # A subset of GitHub's useful Python-based pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      # list of definitions and supported hooks: https://pre-commit.com/hooks.html
+      - id: trailing-whitespace      # removes any whitespace at the ends of lines
+      - id: end-of-file-fixer        # ensures that all files end in a newline (or are empty)
+      - id: check-toml               # check toml syntax by loading all toml files
+      - id: check-yaml               # check yaml syntax by loading all yaml files
+        id: check-json               # check-json syntax by loading all json files
+        id: check-merge-conflict     # check for files with merge conflict strings
+        args: ['--assume-in-merge']  #  and run this check even when not explicitly in a merge
+      - id: check-added-large-files  # check that no "large" files have been added
+        args: ['--maxkb=10240']      #  where large means 10MB+, as in Hugging Face's git server
+      - id: debug-statements         # check for python debug statements (import pdb, breakpoint, etc.)
+      - id: detect-private-key       # checks for private keys (BEGIN X PRIVATE KEY, etc.)
+
+  # black python autoformatting
+    repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+    # additional configuration of black in pyproject.toml
+
+  # flake8 python linter with all the fixins
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        additional_dependencies: [
+          flake8-annotations, flake8-bandit, flake8-bugbear, flake8-black, flake8-docstrings,
+          flake8-import-order, darglint, mypy, pycodestyle, pydocstyle]
+        args: ["--config", ".flake8"]
+    # additional configuration of flake8 and extensions in .flake8
+
+  # shellcheck-py for linting shell files
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.8.0.4
+    hooks:
+      - id: shellcheck
+
+  # mypy dynamic type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.960  # this version is also pinned in requirements/dev-lint.in
+    # splitting into two hooks avoids confusion about modules, see https://github.com/pre-commit/mirrors-mypy/issues/5
+    #   these two hooks should always run together because changes in one module can impact the other
+    hooks:
+      - id: mypy  # both hooks can be called with the same id
+        name: mypy (training)  # but they have different display names
+        pass_filenames: false  # instead of just running on matching changed files
+        entry: mypy training   # we run on mypy training whenever any Python file changes
+      - id: mypy
+        name: mypy (text_recognizer)
+        entry: mypy text_recognizer  # same as above, but running mypy on text_recognizer
+        pass_filenames: false
+        additional_dependencies: [types-toml]
+    # additional configuration of mypy in pyproject.toml
+
+  # remove the outputs from jupyter notebooks
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.5.0
+    hooks:
+      - id: nbstripout
