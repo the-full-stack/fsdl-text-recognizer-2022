@@ -30,4 +30,4 @@ jobs:
         run: |
           ./tasks/test.sh
         env:
-          PYTHONPATH=.
+          PYTHONPATH: .
