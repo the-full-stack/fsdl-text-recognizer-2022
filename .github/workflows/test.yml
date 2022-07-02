@@ -31,3 +31,4 @@ jobs:
           ./tasks/test.sh
         env:
           PYTHONPATH: .
+          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
