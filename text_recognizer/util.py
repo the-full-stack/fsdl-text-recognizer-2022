@@ -61,6 +61,8 @@ def encode_b64_image(image, format="png", grayscale=False):
     image.save(_buffer, format=format)
     encoded_image = base64.b64encode(_buffer.getvalue()).decode("utf8")
     return encoded_image
+
+
 # Hide lines above until Lab 09
 
 
