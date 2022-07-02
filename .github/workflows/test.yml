@@ -1,0 +1,31 @@
+name: Python package
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # allows manual triggering of GitHub Actions
+  workflow_dispatch:
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: requirements/*.txt
+      - name: Install dependencies
+        run: |
+          pip install --quiet -r requirements/prod.txt -r requirements/dev.txt 
+      - name: Run all tests
+        run: |
+          ./tasks/test.sh
