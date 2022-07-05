@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  build:
 
     runs-on: ubuntu-latest
     strategy:
@@ -29,7 +29,17 @@ jobs:
           key: v1-${{ env.pythonLocation }}-${{ hashFiles('requirements/dev.txt') }}-${{ hashFiles('requirements/prod.txt') }}
       - name: Install dependencies with pip
         run: |
-          pip install --quiet -r requirements/prod.txt -r requirements/dev.txt 
+          pip install --quiet -r requirements/prod.txt -r requirements/dev.txt
+
+  test:
+    needs: build
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7"]
+
+    steps:
       - name: Run all tests
         run: |
           ./tasks/test.sh
