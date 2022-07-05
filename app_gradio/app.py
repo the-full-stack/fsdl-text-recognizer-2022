@@ -130,7 +130,7 @@ def _make_parser():
         "--port",
         default=DEFAULT_PORT,
         type=int,
-        help="Port on which to expose this server. Default is {DEFAULT_PORT}",
+        help=f"Port on which to expose this server. Default is {DEFAULT_PORT}",
     )
 
     return parser
