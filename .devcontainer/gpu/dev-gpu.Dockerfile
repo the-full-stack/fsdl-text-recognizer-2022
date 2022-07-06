@@ -14,5 +14,4 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.12.0-Linux-x86_64
     && /root/miniconda/condabin/conda init
 
 # path management
-ENV PATH=/root/miniconda/condabin:$PATH
 ENV PYTHONPATH=.:$PYTHONPATH
