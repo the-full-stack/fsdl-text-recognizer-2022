@@ -1,9 +1,10 @@
 name: overfit
 
 on:
-  schedule:
+  # once GPU runners are available, this workflow can be run
+  # schedule:
     # daily, not on hour start, see https://crontab.guru/
-    - cron: '17 1 * * *'
+    # - cron: '17 1 * * *'
   # allows manual triggering of this workflow
   workflow_dispatch:
 
