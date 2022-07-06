@@ -1,0 +1,39 @@
+name: overfit
+
+on:
+  schedule:
+    # daily, not on hour start, see https://crontab.guru/
+    - cron: '17 1 * * *'
+  # allows manual triggering of this workflow
+  workflow_dispatch:
+
+jobs:
+
+  overfit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Full Python environment cacheing
+      # see AI2 blogpost for details: https://blog.allenai.org/python-caching-in-github-actions-e9452698e98d
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.pythonLocation }}
+          key: v1-${{ env.pythonLocation }}-${{ hashFiles('requirements/dev.txt') }}-${{ hashFiles('requirements/prod.txt') }}
+      - name: Install dependencies with pip
+        run: |
+          pip install --quiet -r requirements/prod.txt -r requirements/dev.txt
+      - name: Run overfitting test
+        run: |
+          ./training/overfit.sh
+        env:
+          PYTHONPATH: .
+          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+          WANDB_PROJECT: fsdl-testing-2022-ci
