@@ -9,7 +9,6 @@ from .cnn import CNN
 # Hide lines below until Lab 03
 from .line_cnn_simple import LineCNNSimple
 from .line_cnn import LineCNN
-from .line_cnn_lstm import LineCNNLSTM
 
 # Hide lines above until Lab 03
 

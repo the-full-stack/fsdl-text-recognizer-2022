@@ -34,7 +34,7 @@ class BaseLitModel(pl.LightningModule):
         self.lr = self.args.get("lr", LR)
 
         loss = self.args.get("loss", LOSS)
-        if loss not in ("ctc", "transformer"):
+        if loss not in ("transformer",):
             self.loss_fn = getattr(torch.nn.functional, loss)
 
         self.one_cycle_max_lr = self.args.get("one_cycle_max_lr", None)

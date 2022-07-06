@@ -115,12 +115,8 @@ def main():
     args = parser.parse_args()
     data, model = setup_data_and_model_from_args(args)
 
-    if args.loss not in ("ctc", "transformer"):
+    if args.loss not in ("transformer",):
         lit_model_class = lit_models.BaseLitModel
-    # Hide lines below until Lab 03
-    if args.loss == "ctc":
-        lit_model_class = lit_models.CTCLitModel
-    # Hide lines above until Lab 03
     # Hide lines below until Lab 04
     if args.loss == "transformer":
         lit_model_class = lit_models.TransformerLitModel
@@ -136,7 +132,7 @@ def main():
     logger = pl.loggers.TensorBoardLogger(log_dir)
     experiment_dir = logger.log_dir
 
-    goldstar_metric = "validation/cer" if args.loss in ["ctc", "transformer"] else "validation/loss"
+    goldstar_metric = "validation/cer" if args.loss in ("transformer",) else "validation/loss"
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
         save_top_k=5,
         filename="epoch={epoch:04d}-validation.loss={validation/loss:.3f}-validation.cer={validation/cer:.3f}",
@@ -165,7 +161,7 @@ def main():
         callbacks.append(early_stopping_callback)
 
     # Hide lines below until Lab 05
-    if args.wandb and args.loss in ["ctc", "transformer"]:
+    if args.wandb and args.loss in ("transformer",):
         callbacks.append(logging.ImageToTextLogger())
 
     # Hide lines above until Lab 05
