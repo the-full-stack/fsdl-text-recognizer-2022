@@ -11,16 +11,13 @@ jobs:
 
   overfit:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.7"]
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.7
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.7"
       - name: Full Python environment cacheing
       # see AI2 blogpost for details: https://blog.allenai.org/python-caching-in-github-actions-e9452698e98d
         uses: actions/cache@v2
@@ -32,7 +29,7 @@ jobs:
           pip install --quiet -r requirements/prod.txt -r requirements/dev.txt
       - name: Run overfitting test
         run: |
-          ./training/overfit.sh
+          ./training/tests/overfit.sh
         env:
           PYTHONPATH: .
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
