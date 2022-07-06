@@ -8,7 +8,6 @@ RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/
          wget \
          make
    
-
 # install miniconda
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.12.0-Linux-x86_64.sh -O ~/miniconda.sh && bash ~/miniconda.sh -b -p $HOME/miniconda
 
