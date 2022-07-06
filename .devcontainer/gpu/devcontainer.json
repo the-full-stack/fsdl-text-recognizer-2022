@@ -5,5 +5,5 @@
     "dockerfile": "dev-gpu.Dockerfile",
   },
     
-  "postCreateCommand": "make conda-update && activate fsdl-text-recognizer-2022 && make pip-tools"
+  "postCreateCommand": "make conda-update && conda activate fsdl-text-recognizer-2022 && make pip-tools"
 }
