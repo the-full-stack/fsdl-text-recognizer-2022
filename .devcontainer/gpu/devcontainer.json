@@ -1,3 +1,9 @@
 {
-  "build": { "dockerfile": "dev-gpu.Dockerfile" },
+  "name": "GPU Development Environment",
+    
+  "build": {
+    "dockerfile": "dev-gpu.Dockerfile",
+  },
+    
+  "postCreateCommand": "make conda-update && activate fsdl-text-recognizer-2022 && make pip-tools"
 }
