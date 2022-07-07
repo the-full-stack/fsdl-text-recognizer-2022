@@ -2,8 +2,6 @@
   "name": "GPU Development Environment",
 
   "build": {
-    "dockerfile": "dev-gpu.Dockerfile",
-  },
-
-  "postCreateCommand": "make conda-update && PATH=/root/miniconda/envs/fsdl-text-recognizer-2022/bin:$PATH make pip-tools"
+    "dockerfile": "dev-gpu.Dockerfile"
+  }
 }
