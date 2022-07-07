@@ -1,0 +1,30 @@
+name: docker
+
+on:
+  push:
+    branches:
+    - 'main'
+    # rebuild whenever the .devcontainer or the requirements change
+    paths:
+    - ['.devcontainer/gpu-from-scratch', 'requirements/*']
+  # allows workflows to be triggered manually
+  workflow_dispatch:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: fullstackdeeplearning/development:latest
+          context: .devcontainer/gpu-from-scratch/
+          file: {context}/dev-gpu.Dockerfile
