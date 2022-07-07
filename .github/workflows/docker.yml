@@ -27,4 +27,4 @@ jobs:
           push: true
           tags: fullstackdeeplearning/development:latest
           context: .devcontainer/gpu-from-scratch/
-          file: {context}/dev-gpu.Dockerfile
+          file: .devcontainer/gpu-from-scratch/dev-gpu.Dockerfile
