@@ -36,6 +36,5 @@ RUN make pip-tools && rm -rf ./Makefile ./requirements ./environment.yml
 # add current dir to PYTHONPATH so libraries are importable
 ENV PYTHONPATH=.:$PYTHONPATH
 
-EXPOSE 8888
-
+# run all commands inside the conda environment
 ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "fsdl-text-recognizer-2022", "/bin/bash"]
