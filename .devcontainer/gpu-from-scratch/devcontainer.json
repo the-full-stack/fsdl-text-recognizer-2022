@@ -4,7 +4,7 @@
   "build": {
     "dockerfile": "dev-gpu.Dockerfile"
   },
-    
+
  "extensions": [
     "ms-python.python"
   ]
