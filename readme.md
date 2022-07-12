@@ -1,4 +1,4 @@
-# FSDL Text Recognizer 2022
+# 🥞 FSDL Text Recognizer 2022
 
 Implements a text recognizer using a hypermodern 2022 DL stack:
 
