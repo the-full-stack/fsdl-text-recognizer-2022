@@ -8,5 +8,5 @@ tqdm
 gradio==3.0.17
 # versioned to match Google Colab up to minor
 pillow<7.2
-torch>=1.11,<1.12
-torchvision>=0.12
+torch>=1.12,<1.13
+torchvision>=0.13
