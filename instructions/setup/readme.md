@@ -10,7 +10,7 @@ If you don't, you can compute using [Google Colab](#Colab).
 ## Colab
 
 Google Colab is a great way to get access to fast GPUs for free.
-All you need is a Google account (Berkeley accounts will work).
+All you need is a Google account.
 
 Go to [https://colab.research.google.com](https://colab.research.google.com), and create a New Notebook.
 
@@ -26,51 +26,19 @@ Now, paste the following into a cell and run it:
 # FSDL Spring 2022 Setup
 !git clone https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs
 %cd fsdl-text-recognizer-2022-labs
-!pip install -r requirements/prod.in
-!sed 1d requirements/dev.in | grep -v "#" | xargs pip install
+!pip install -qqq -r requirements/prod.in
+!sed 1d requirements/dev.in | grep -v "#" | xargs pip install -qqq
 %env PYTHONPATH=.:$PYTHONPATH
 ```
 
 This will check out our lab repository, `cd` into it, and install required packages.
 It also allows Python to find packages in the current working directory.
 
-Now we can enter the `lab01` directory and make sure things work:
-![](colab_lab1.png)
-
 ### Colab Pro
 
 You may be interested in signing up for [Colab Pro](https://colab.research.google.com/signup).
 
 For $10/month, you get priority access to fast GPUs (e.g. [P100 vs K80](https://www.xcelerit.com/computing-benchmarks/insights/nvidia-p100-vs-k80-gpu/)) and TPUs, a 24h rather than 12h maximum runtime, and more RAM.
-
-### VSCode on Google Colab
-
-(This is advanced and not necessary -- feel free to skip for now!).
-
-It is possible to use the VSCode interface in Colab.
-
-Open a Colab notebook (or continue in the one you may already have going), make sure you're connected to the runtime you want, and run this in a cell:
-
-```
-# Launch VSCode server
-!curl -fsSL https://code-server.dev/install.sh | sh
-!nohup code-server --port 9000 --auth none &
-
-# Tunnel its IP using ngrok
-!pip install pyngrok
-from pyngrok import ngrok
-# ngrok.set_auth_token("get from https://dashboard.ngrok.com/auth/your-authtoken, if you want to pay $10/month for a little bit better service")
-url = ngrok.connect(9000)
-print(url)
-```
-
-This is what you should see:
-![](colab_vscode.png)
-
-Clicking the ngrok link takes you to a web VSCode interface:
-![](colab_vscode_2.png)
-
-You can sign up for a paid version of ngrok ($10/month) in order to get `https` tunneling and a slightly nicer experience.
 
 ## Local
 
@@ -100,8 +68,6 @@ We add a `Makefile` for making setup dead-simple.
 
 #### First: Install the Python + CUDA environment using Anaconda
 
-**Note**: this step is not necessary if you are using the GCP AI Platform Notebooks instance.
-
 Conda is an open-source package management system and environment management system that runs on Windows, macOS, and Linux.
 
 To install `conda`, follow instructions at https://docs.conda.io/en/latest/miniconda.html.
@@ -128,11 +94,9 @@ Next, install all necessary Python packages by running `make pip-tools`
 
 Using `pip-tools` lets us do three nice things:
 
-1. Separate out dev from production dependencies (`requirements-dev.in` vs `requirements.in`).
-2. Have a lockfile of exact versions for all dependencies (the auto-generated `requirements-dev.txt` and `requirements.txt`).
+1. Separate out dev from production dependencies (`dev.in` vs `prod.in`).
+2. Have a lockfile of exact versions for all dependencies (the auto-generated `dev.txt` and `prod.txt`).
 3. Allow us to easily deploy to targets that don't support the `conda` environment, like Colab.
-
-If you add, remove, or need to update versions of some requirements, edit the `.in` files, and simply run `make pip-tools` again.
 
 #### Set PYTHONPATH
 
