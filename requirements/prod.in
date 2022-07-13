@@ -5,7 +5,7 @@ requests
 smart_open
 tqdm
 # versioned for stability
-gradio==3.0.17
+gradio==3.0.24
 # versioned to match Google Colab up to minor
 pillow<7.2
 torch>=1.12,<1.13
