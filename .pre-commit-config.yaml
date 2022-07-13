@@ -5,7 +5,6 @@ repos:
     hooks:
       # list of definitions and supported hooks: https://pre-commit.com/hooks.html
       - id: trailing-whitespace      # removes any whitespace at the ends of lines
-      - id: end-of-file-fixer        # ensures that all files end in a newline (or are empty)
       - id: check-toml               # check toml syntax by loading all toml files
       - id: check-yaml               # check yaml syntax by loading all yaml files
       - id: check-json               # check-json syntax by loading all json files
