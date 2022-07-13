@@ -54,3 +54,4 @@ _labs
 lab9/requirements.txt
 .coverage
 /requirements.txt
+bootstrap.py
