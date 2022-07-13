@@ -1,13 +1,14 @@
 common:
-  - .circleci/config.yml
   - .gitignore
   - environment.yml
   - LICENSE.txt
   - Makefile
+  - requirements/dev-lint.in
   - requirements/dev.in
   - requirements/dev.txt
   - requirements/prod.in
   - requirements/prod.txt
+  - notebooks/lab00_overview.ipynb
 # keys are mapped to ints by yaml loading,
 #  so zero-filling here is not respected
 01:
