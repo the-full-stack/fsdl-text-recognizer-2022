@@ -57,9 +57,31 @@ class IAM(BaseDataModule):
     @property
     def split_by_id(self):
         return {
-            filename.stem: "test" if filename.stem in self.metadata["test_ids"] else "trainval"
+            filename.stem: "test" if filename.stem in self.test_ids else "trainval"
             for filename in self.form_filenames
         }
+
+    @cachedproperty
+    def all_ids(self):
+        """Return a list of all ids."""
+        return sorted([f.stem for f in self.xml_filenames])
+
+    @cachedproperty
+    def test_ids(self):
+        """Return a list of test ids."""
+        return _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / 'task/testset.txt')
+
+    @cachedproperty
+    def validation_ids(self):
+        """Return a list of validation ids."""
+        val_ids = _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / 'task/validationset1.txt')
+        val_ids.extend(_get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / 'task/validationset2.txt'))
+        return val_ids
+
+    @cachedproperty
+    def train_ids(self):
+        """Return a list of train ids."""
+        return list(set(self.all_ids) - (set(self.test_ids) | set(self.validation_ids)))
 
     @cachedproperty
     def line_strings_by_id(self):
@@ -83,6 +105,15 @@ def _extract_raw_dataset(filename: Path, dirname: Path) -> None:
     with zipfile.ZipFile(filename, "r") as zip_file:
         zip_file.extractall()
     os.chdir(curdir)
+
+
+def _get_ids_from_lwitlrt_split_file(filename: str) -> List[str]:
+    """Get the ids from Large Writer Independent Text Line Recognition Task (LWITLRT) data split file."""
+    with open(filename, 'r') as f:
+        line_ids_str = f.read()
+    line_ids = line_ids_str.split('\n')
+    page_ids = list({'-'.join(line_id.split('-')[:2]) for line_id in line_ids if line_id})
+    return page_ids
 
 
 def _get_line_strings_from_xml_file(filename: str) -> List[str]:
