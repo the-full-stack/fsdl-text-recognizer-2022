@@ -34,7 +34,7 @@ LITMODEL_CLASS = TransformerLitModel
 
 api = wandb.Api()
 
-DEFAULT_ENTITY = api.default_entity
+DEFAULT_ENTITY = "fullstackdeeplearning"   # api.default_entity
 DEFAULT_FROM_PROJECT = "fsdl-text-recognizer-2021-training"
 DEFAULT_TO_PROJECT = "fsdl-text-recognizer-2021-training"
 DEFAULT_STAGED_MODEL_NAME = "paragraph-text-recognizer"

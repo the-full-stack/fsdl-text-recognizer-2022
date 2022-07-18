@@ -3,7 +3,7 @@
 These notes describe how to reliably update the environment
 for the labs, from system libraries up to Python packages.
 
-Users set up their environment by following the instructions in `instructions/setup.md`.
+Users set up their environment by following the instructions in `instructions/setup/readme.md`.
 Any changes that are made to the user-facing process should be documented there, not here.
 
 <details>
@@ -99,7 +99,7 @@ but the `conda` environment is the source of truth.
 So the Python version is mentioned in the following places:
 
 - `environment.yml`, which describes the `conda` environment
-- `.circleci/config.yml` and `.circleci/config-for-labs.yml`, which describe the CI environment
+- `.github/workflows/*.yml`, which describe the CI environment
 - `api_server/Dockerfile` and `api_serverless/Dockerfile`, which describe the production app environment
 
 Changes need to be synchronized by hand.
