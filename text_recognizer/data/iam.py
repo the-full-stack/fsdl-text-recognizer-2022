@@ -54,13 +54,6 @@ class IAM(BaseDataModule):
     def form_filenames_by_id(self):
         return {filename.stem: filename for filename in self.form_filenames}
 
-    @property
-    def split_by_id(self):
-        return {
-            filename.stem: "test" if filename.stem in self.test_ids else "trainval"
-            for filename in self.form_filenames
-        }
-
     @cachedproperty
     def all_ids(self):
         """Return a list of all ids."""
@@ -68,20 +61,27 @@ class IAM(BaseDataModule):
 
     @cachedproperty
     def test_ids(self):
-        """Return a list of test ids."""
+        """Return a list of IAM lines Large Writer Independent Text Line Recognition Task test ids."""
         return _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / 'task/testset.txt')
 
     @cachedproperty
     def validation_ids(self):
-        """Return a list of validation ids."""
+        """Return a list of IAM lines Large Writer Independent Text Line Recognition Task validation (set 1 and set 2) ids."""
         val_ids = _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / 'task/validationset1.txt')
         val_ids.extend(_get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / 'task/validationset2.txt'))
         return val_ids
 
     @cachedproperty
     def train_ids(self):
-        """Return a list of train ids."""
+        """Return a list of train ids - all ids which aren't test or validation ids."""
         return list(set(self.all_ids) - (set(self.test_ids) | set(self.validation_ids)))
+
+    @cachedproperty
+    def split_by_id(self):
+        split_by_id = {id_: "train" for id_ in self.train_ids}
+        split_by_id.update({id_: "val" for id_ in self.validation_ids})
+        split_by_id.update({id_: "test" for id_ in self.test_ids})
+        return split_by_id
 
     @cachedproperty
     def line_strings_by_id(self):

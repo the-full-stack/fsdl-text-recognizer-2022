@@ -55,7 +55,7 @@ class IAMParagraphs(BaseDataModule):
         iam.prepare_data()
 
         properties = {}
-        for split in ["trainval", "test"]:
+        for split in ["train", "val", "test"]:
             crops, labels = get_paragraph_crops_and_labels(iam=iam, split=split)
             save_crops_and_labels(crops=crops, labels=labels, split=split)
 
@@ -83,8 +83,8 @@ class IAMParagraphs(BaseDataModule):
         validate_input_and_output_dimensions(input_dims=self.input_dims, output_dims=self.output_dims)
 
         if stage == "fit" or stage is None:
-            data_trainval = _load_dataset(split="trainval", transform=self.trainval_transform)
-            self.data_train, self.data_val = split_dataset(base_dataset=data_trainval, fraction=TRAIN_FRAC, seed=42)
+            self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
+            self.data_val = _load_dataset(split="val", transform=self.trainval_transform)
             self.data_test = _load_dataset(split="test", transform=self.transform)
 
         if stage == "test" or stage is None:
