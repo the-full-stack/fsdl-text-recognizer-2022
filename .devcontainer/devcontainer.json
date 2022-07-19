@@ -1,5 +1,5 @@
 {
-  "name": "Default GPU Development Environment",
+  "name": "GPU Development Environment",
 
   "image": "fullstackdeeplearning/development:latest",
 
