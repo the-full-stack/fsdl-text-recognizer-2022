@@ -1,0 +1,9 @@
+{
+  "name": "Default GPU Development Environment",
+
+  "image": "fullstackdeeplearning/development:latest",
+
+ "extensions": [
+    "ms-python.python"
+  ]
+}
