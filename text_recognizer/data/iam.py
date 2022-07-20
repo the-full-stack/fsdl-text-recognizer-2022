@@ -62,13 +62,13 @@ class IAM(BaseDataModule):
     @cachedproperty
     def test_ids(self):
         """Return a list of IAM lines Large Writer Independent Text Line Recognition Task test ids."""
-        return _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / 'task/testset.txt')
+        return _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/testset.txt")
 
     @cachedproperty
     def validation_ids(self):
         """Return a list of IAM lines Large Writer Independent Text Line Recognition Task validation (set 1 and set 2) ids."""
-        val_ids = _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / 'task/validationset1.txt')
-        val_ids.extend(_get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / 'task/validationset2.txt'))
+        val_ids = _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/validationset1.txt")
+        val_ids.extend(_get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/validationset2.txt"))
         return val_ids
 
     @cachedproperty
@@ -109,10 +109,10 @@ def _extract_raw_dataset(filename: Path, dirname: Path) -> None:
 
 def _get_ids_from_lwitlrt_split_file(filename: str) -> List[str]:
     """Get the ids from Large Writer Independent Text Line Recognition Task (LWITLRT) data split file."""
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         line_ids_str = f.read()
-    line_ids = line_ids_str.split('\n')
-    page_ids = list({'-'.join(line_id.split('-')[:2]) for line_id in line_ids if line_id})
+    line_ids = line_ids_str.split("\n")
+    page_ids = list({"-".join(line_id.split("-")[:2]) for line_id in line_ids if line_id})
     return page_ids
 
 

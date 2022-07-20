@@ -24,7 +24,7 @@ import wandb
 api = wandb.Api()
 
 DEFAULT_PROJECT = "fsdl-text-recognizer-2021-training"
-DEFAULT_ENTITY = "fullstackdeeplearning"   # api.default_entity
+DEFAULT_ENTITY = "fullstackdeeplearning"
 
 
 def _setup_parser():

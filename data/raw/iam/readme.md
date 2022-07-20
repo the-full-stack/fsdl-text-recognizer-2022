@@ -39,6 +39,6 @@ To avoid missing out on all the dropped data, we slightly modify the data splits
  - all the missing pages of 157 writers are added to the train data split.
 Our final data splits are:
  - Train: has 9,462 text lines from 1,087 pages written by 440 writers
- - Validation: has 1,926 text lines from 220 pages written by 89 writers 
+ - Validation: has 1,926 text lines from 220 pages written by 89 writers
  - Test: has 1,965 text lines from 232 pages written by 128 writers
 Total: has 13,353 text lines from 1,539 pages written by 657 writers
