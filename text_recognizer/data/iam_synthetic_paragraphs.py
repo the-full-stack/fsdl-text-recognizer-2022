@@ -44,7 +44,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         iam = IAM()
         iam.prepare_data()
 
-        for split in ["train", "val", "test"]:
+        for split in ["train"]:  # synthetic dataset is only used in training phase
             rank_zero_info(f"Cropping IAM line regions and loading labels for {split} data split...")
             crops, labels = line_crops_and_labels(iam, split)
 
