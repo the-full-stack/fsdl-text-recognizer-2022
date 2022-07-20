@@ -47,9 +47,9 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         for split in ["train", "val", "test"]:
             rank_zero_info(f"Cropping IAM line regions and loading labels for {split} data split...")
             crops, labels = line_crops_and_labels(iam, split)
-    
-            crops = [resize_image(crop, IMAGE_SCALE_FACTOR) for crop in crops]  # TODO: iam_syn does this but iam_para does not. So when does iam_para resize?
-    
+
+            crops = [resize_image(crop, IMAGE_SCALE_FACTOR) for crop in crops]
+
             rank_zero_info(f"Saving images and labels at {PROCESSED_DATA_DIRNAME} for {split} data split...")
             save_images_and_labels(crops, labels, split, PROCESSED_DATA_DIRNAME)
 
