@@ -6,6 +6,7 @@ from torch.utils.data import ConcatDataset
 from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
 from text_recognizer.data.iam_paragraphs import IAMParagraphs
 from text_recognizer.data.iam_synthetic_paragraphs import IAMSyntheticParagraphs
+from torch.utils.data import DataLoader
 
 
 class IAMOriginalAndSyntheticParagraphs(BaseDataModule):
@@ -47,6 +48,18 @@ class IAMOriginalAndSyntheticParagraphs(BaseDataModule):
 
         if stage == "test" or stage is None:
             self.data_test = self.iam_paragraphs.data_test
+
+    def train_dataloader(self):
+        # I can move synthetic data creation code here and set --reload_dataloaders_every_n_epochs in trainer.fit()
+        self.iam_syn_paragraphs.setup("train_only")
+        self.data_train = ConcatDataset([self.iam_paragraphs.data_train, self.iam_syn_paragraphs.data_train])
+        return DataLoader(
+            self.data_train,
+            shuffle=True,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            pin_memory=self.on_gpu,
+        )
 
     def __repr__(self) -> str:
         """Print info about the dataset."""

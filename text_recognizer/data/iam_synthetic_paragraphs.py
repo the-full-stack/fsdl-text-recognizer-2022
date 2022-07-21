@@ -66,6 +66,8 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         if stage == "fit" or stage is None:
             self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
             self.data_val = _load_dataset(split="val", transform=self.transform)
+        elif stage == "train_only":
+            self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
