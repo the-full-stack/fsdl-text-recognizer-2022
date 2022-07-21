@@ -30,6 +30,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
     def __init__(self, args: argparse.Namespace = None):
         super().__init__(args)
         self.trainval_transform.scale_factor = 1  # we perform rescaling ahead of time, in prepare_data
+        self.transform.scale_factor = 1  # we perform rescaling ahead of time, in prepare_data; not setting this was the problem
 
     def prepare_data(self, *args, **kwargs) -> None:
         """
@@ -63,11 +64,9 @@ class IAMSyntheticParagraphs(IAMParagraphs):
             Y = convert_strings_to_labels(strings=para_labels, mapping=self.inverse_mapping, length=self.output_dims[0])
             return BaseDataset(X, Y, transform=transform)
 
-        if stage == "fit" or stage is None:
+        if stage in ["fit", "train_only", None]:
             self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
-            self.data_val = _load_dataset(split="val", transform=self.transform)
-        elif stage == "train_only":
-            self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
+            # self.data_val = _load_dataset(split="val", transform=self.transform)
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
