@@ -14,6 +14,7 @@ from text_recognizer.data.iam_paragraphs import (
     get_dataset_properties,
     IAMParagraphs,
 )
+from text_recognizer.stems.paragraph import ParagraphStem
 from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
 import text_recognizer.metadata.iam_synthetic_paragraphs as metadata
 
@@ -44,7 +45,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         iam = IAM()
         iam.prepare_data()
 
-        for split in ["train"]:  # synthetic dataset is only used in training phase
+        for split in ["train", "val"]:  # synthetic dataset is only used in training phase
             rank_zero_info(f"Cropping IAM line regions and loading labels for {split} data split...")
             crops, labels = line_crops_and_labels(iam, split)
 
@@ -56,11 +57,15 @@ class IAMSyntheticParagraphs(IAMParagraphs):
     def setup(self, stage: str = None) -> None:
         rank_zero_info(f"IAMSyntheticParagraphs.setup({stage}): Loading trainval IAM paragraph regions and lines...")
 
-        if stage == "fit" or stage is None:
-            line_crops, line_labels = load_line_crops_and_labels("train", PROCESSED_DATA_DIRNAME)
+        def _load_dataset(split: str, transform: ParagraphStem) -> BaseDataset:
+            line_crops, line_labels = load_line_crops_and_labels(split, PROCESSED_DATA_DIRNAME)
             X, para_labels = generate_synthetic_paragraphs(line_crops=line_crops, line_labels=line_labels)
             Y = convert_strings_to_labels(strings=para_labels, mapping=self.inverse_mapping, length=self.output_dims[0])
-            self.data_train = BaseDataset(X, Y, transform=self.trainval_transform)
+            return BaseDataset(X, Y, transform=transform)
+
+        if stage == "fit" or stage is None:
+            self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
+            self.data_val = _load_dataset(split="val", transform=self.transform)
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
@@ -75,7 +80,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
         x, y = next(iter(self.train_dataloader()))
         data = (
-            f"Train/val/test sizes: {len(self.data_train)}, 0, 0\n"
+            f"Train/val/test sizes: {len(self.data_train)}, {len(self.data_val)}, 0\n"
             f"Train Batch x stats: {(x.shape, x.dtype, x.min(), x.mean(), x.std(), x.max())}\n"
             f"Train Batch y stats: {(y.shape, y.dtype, y.min(), y.max())}\n"
         )
@@ -83,7 +88,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
 
 def generate_synthetic_paragraphs(
-    line_crops: List[Image.Image], line_labels: List[str], max_batch_size: int = 9
+    line_crops: List[Image.Image], line_labels: List[str], max_batch_size: int = 12
 ) -> Tuple[List[Image.Image], List[str]]:
     """Generate synthetic paragraphs and corresponding labels by randomly joining different subsets of crops."""
     paragraph_properties = get_dataset_properties()
@@ -91,15 +96,24 @@ def generate_synthetic_paragraphs(
     indices = list(range(len(line_labels)))
     assert max_batch_size < paragraph_properties["num_lines"]["max"]
 
-    batched_indices_list = [[_] for _ in indices]  # batch_size = 1, len = 11395
+    batched_indices_list = [[_] for _ in indices]  # batch_size = 1, len = 9462
     batched_indices_list.extend(
-        generate_random_batches(values=indices, min_batch_size=2, max_batch_size=max_batch_size // 2)
+        generate_random_batches(values=indices, min_batch_size=2, max_batch_size=(1 * max_batch_size) // 4)
+    )
+    batched_indices_list.extend(
+        generate_random_batches(values=indices, min_batch_size=2, max_batch_size=(2 * max_batch_size) // 4)
+    )
+    batched_indices_list.extend(
+        generate_random_batches(values=indices, min_batch_size=2, max_batch_size=(3 * max_batch_size) // 4)
     )
     batched_indices_list.extend(
         generate_random_batches(values=indices, min_batch_size=2, max_batch_size=max_batch_size)
     )
     batched_indices_list.extend(
-        generate_random_batches(values=indices, min_batch_size=(max_batch_size // 2) + 1, max_batch_size=max_batch_size)
+        generate_random_batches(values=indices, min_batch_size=(2 * max_batch_size) // 4 + 1, max_batch_size=max_batch_size)
+    )
+    batched_indices_list.extend(
+        generate_random_batches(values=indices, min_batch_size=(3 * max_batch_size) // 4 + 1, max_batch_size=max_batch_size)
     )
     # assert sorted(list(itertools.chain(*batched_indices_list))) == indices
 
