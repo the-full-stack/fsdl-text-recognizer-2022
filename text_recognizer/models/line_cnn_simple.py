@@ -6,10 +6,11 @@ from typing import Any, Dict
 import torch
 from torch import nn
 
-from .cnn import CNN, IMAGE_SIZE
+from .cnn import CNN
 
-WINDOW_WIDTH = 28
-WINDOW_STRIDE = 28
+IMAGE_SIZE = 28
+WINDOW_WIDTH = IMAGE_SIZE
+WINDOW_STRIDE = IMAGE_SIZE
 
 
 class LineCNNSimple(nn.Module):
