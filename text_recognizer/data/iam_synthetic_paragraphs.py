@@ -40,24 +40,24 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         rank_zero_info(
             "IAMSyntheticParagraphs.prepare_data: preparing IAM lines for synthetic IAM paragraph creation..."
         )
-        rank_zero_info("Cropping IAM line regions and loading labels...")
+
         iam = IAM()
         iam.prepare_data()
-        crops_trainval, labels_trainval = line_crops_and_labels(iam, "trainval")
-        crops_test, labels_test = line_crops_and_labels(iam, "test")
 
-        crops_trainval = [resize_image(crop, IMAGE_SCALE_FACTOR) for crop in crops_trainval]
-        crops_test = [resize_image(crop, IMAGE_SCALE_FACTOR) for crop in crops_test]
+        for split in ["train"]:  # synthetic dataset is only used in training phase
+            rank_zero_info(f"Cropping IAM line regions and loading labels for {split} data split...")
+            crops, labels = line_crops_and_labels(iam, split)
 
-        rank_zero_info(f"Saving images and labels at {PROCESSED_DATA_DIRNAME}...")
-        save_images_and_labels(crops_trainval, labels_trainval, "trainval", PROCESSED_DATA_DIRNAME)
-        save_images_and_labels(crops_test, labels_test, "test", PROCESSED_DATA_DIRNAME)
+            crops = [resize_image(crop, IMAGE_SCALE_FACTOR) for crop in crops]
+
+            rank_zero_info(f"Saving images and labels at {PROCESSED_DATA_DIRNAME} for {split} data split...")
+            save_images_and_labels(crops, labels, split, PROCESSED_DATA_DIRNAME)
 
     def setup(self, stage: str = None) -> None:
         rank_zero_info(f"IAMSyntheticParagraphs.setup({stage}): Loading trainval IAM paragraph regions and lines...")
 
         if stage == "fit" or stage is None:
-            line_crops, line_labels = load_line_crops_and_labels("trainval", PROCESSED_DATA_DIRNAME)
+            line_crops, line_labels = load_line_crops_and_labels("train", PROCESSED_DATA_DIRNAME)
             X, para_labels = generate_synthetic_paragraphs(line_crops=line_crops, line_labels=line_labels)
             Y = convert_strings_to_labels(strings=para_labels, mapping=self.inverse_mapping, length=self.output_dims[0])
             self.data_train = BaseDataset(X, Y, transform=self.trainval_transform)

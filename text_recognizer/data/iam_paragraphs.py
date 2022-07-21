@@ -10,7 +10,7 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_info
 
 from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
 from text_recognizer.data.iam import IAM
-from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, split_dataset
+from text_recognizer.data.util import BaseDataset, convert_strings_to_labels
 import text_recognizer.metadata.iam_paragraphs as metadata
 from text_recognizer.stems.paragraph import ParagraphStem
 
@@ -55,7 +55,7 @@ class IAMParagraphs(BaseDataModule):
         iam.prepare_data()
 
         properties = {}
-        for split in ["trainval", "test"]:
+        for split in ["train", "val", "test"]:
             crops, labels = get_paragraph_crops_and_labels(iam=iam, split=split)
             save_crops_and_labels(crops=crops, labels=labels, split=split)
 
@@ -83,8 +83,8 @@ class IAMParagraphs(BaseDataModule):
         validate_input_and_output_dimensions(input_dims=self.input_dims, output_dims=self.output_dims)
 
         if stage == "fit" or stage is None:
-            data_trainval = _load_dataset(split="trainval", transform=self.trainval_transform)
-            self.data_train, self.data_val = split_dataset(base_dataset=data_trainval, fraction=TRAIN_FRAC, seed=42)
+            self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
+            self.data_val = _load_dataset(split="val", transform=self.trainval_transform)
             self.data_test = _load_dataset(split="test", transform=self.transform)
 
         if stage == "test" or stage is None:

@@ -35,8 +35,8 @@ LITMODEL_CLASS = TransformerLitModel
 api = wandb.Api()
 
 DEFAULT_ENTITY = api.default_entity
-DEFAULT_FROM_PROJECT = "fsdl-text-recognizer-2021-training"
-DEFAULT_TO_PROJECT = "fsdl-text-recognizer-2021-training"
+DEFAULT_FROM_PROJECT = "fsdl-text-recognizer-2022-training"
+DEFAULT_TO_PROJECT = "fsdl-text-recognizer-2022-training"
 DEFAULT_STAGED_MODEL_NAME = "paragraph-text-recognizer"
 
 PROD_STAGING_ROOT = PROJECT_ROOT / "text_recognizer" / "artifacts"
@@ -45,10 +45,11 @@ PROD_STAGING_ROOT = PROJECT_ROOT / "text_recognizer" / "artifacts"
 def main(args):
     prod_staging_directory = PROD_STAGING_ROOT / args.staged_model_name
     prod_staging_directory.mkdir(exist_ok=True)
+    entity = _get_entity_from(args)
     # if we're just fetching an already compiled model
     if args.fetch:
         # find it and download it
-        staged_model = f"{args.entity}/{args.from_project}/{args.staged_model_name}:latest"
+        staged_model = f"{entity}/{args.from_project}/{args.staged_model_name}:latest"
         artifact = download_artifact(staged_model, prod_staging_directory)
         print_info(artifact)
         return  # and we're done
@@ -59,7 +60,7 @@ def main(args):
     ):  # log staging to W&B so prod and training are connected
         # find the model checkpoint and retrieve its artifact name and an api handle
         ckpt_at, ckpt_api = find_artifact(
-            args.entity, args.from_project, type=MODEL_CHECKPOINT_TYPE, alias=args.ckpt_alias, run=args.run
+            entity, args.from_project, type=MODEL_CHECKPOINT_TYPE, alias=args.ckpt_alias, run=args.run
         )
 
         # get the run that produced that checkpoint
@@ -205,6 +206,16 @@ def _find_artifact_project(entity, project, type, alias):
     raise ValueError(f"Artifact type {type} not found. {project_name} could be private or not exist.")
 
 
+def _get_entity_from(args):
+    entity = args.entity
+    if entity is None:
+        raise RuntimeError(f"No entity argument provided. Use --entity=DEFAULT to use {DEFAULT_ENTITY}.")
+    elif entity == "DEFAULT":
+        entity = DEFAULT_ENTITY
+
+    return entity
+
+
 def _setup_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -215,8 +226,8 @@ def _setup_parser():
     parser.add_argument(
         "--entity",
         type=str,
-        default=DEFAULT_ENTITY,
-        help=f"Entity from which to download the checkpoint. Note that checkpoints are uploaded to the logged-in wandb entity. Default is {DEFAULT_ENTITY}.",
+        default=None,
+        help=f"Entity from which to download the checkpoint. Note that checkpoints are uploaded to the logged-in wandb entity. Pass the value DEFAULT to use the default entity, {DEFAULT_ENTITY}.",
     )
     parser.add_argument(
         "--from_project",

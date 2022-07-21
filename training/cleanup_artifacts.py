@@ -32,8 +32,9 @@ def _setup_parser():
     parser.add_argument(
         "--entity",
         type=str,
-        default=DEFAULT_ENTITY,
-        help=f"The entity from which to remove artifacts. Default is {DEFAULT_ENTITY}",
+        default=None,
+        help="The entity from which to remove artifacts. Provide the value DEFAULT"
+        + f"to use the default WANDB_ENTITY, which is currently {DEFAULT_ENTITY}.",
     )
     parser.add_argument(
         "--project",
@@ -172,6 +173,8 @@ def _get_selector_from(args, verbose=False):
 def _get_entity_from(args, verbose=False):
     entity = args.entity
     if entity is None:
+        raise RuntimeError(f"No entity argument provided. Use --entity=DEFAULT to use {DEFAULT_ENTITY}.")
+    elif entity == "DEFAULT":
         entity = DEFAULT_ENTITY
         if verbose:
             print(f"using default entity {entity}")

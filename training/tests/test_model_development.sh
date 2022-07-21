@@ -20,10 +20,10 @@ python training/run_experiment.py --data_class=IAMParagraphs --model_class=Resne
 TRAIN_RUN=$(find ./training/logs/wandb/latest-run/* | grep -Eo "run-([[:alnum:]])+\.wandb" | sed -e "s/^run-//" -e "s/\.wandb//")
 
 echo "staging trained model from run $TRAIN_RUN"
-python training/stage_model.py --run "$TRAIN_RUN" --staged_model_name test-dummy --ckpt_alias latest --to_project "$WANDB_PROJECT" --from_project "$WANDB_PROJECT" || FAILURE=true
+python training/stage_model.py --entity DEFAULT --run "$TRAIN_RUN" --staged_model_name test-dummy --ckpt_alias latest --to_project "$WANDB_PROJECT" --from_project "$WANDB_PROJECT" || FAILURE=true
 
 echo "fetching staged model"
-python training/stage_model.py --fetch --from_project $WANDB_PROJECT --staged_model_name test-dummy || FAILURE=true
+python training/stage_model.py --entity DEFAULT --fetch --from_project $WANDB_PROJECT --staged_model_name test-dummy || FAILURE=true
 STAGE_RUN=$(find ./training/logs/wandb/latest-run/* | grep -Eo "run-([[:alnum:]])+\.wandb" | sed -e "s/^run-//" -e "s/\.wandb//")
 
 if [ "$FAILURE" = true ]; then
@@ -35,7 +35,7 @@ if [ "$FAILURE" = true ]; then
 fi
 echo "cleaning up local and remote files"
 rm -rf text_recognizer/artifacts/test-dummy
-python training/cleanup_artifacts.py --project "$WANDB_PROJECT" \
+python training/cleanup_artifacts.py --entity DEFAULT --project "$WANDB_PROJECT" \
   --run_ids "$TRAIN_RUN" "$STAGE_RUN" --all -v
 # note: if $TRAIN_RUN and $STAGE_RUN are not set, this will fail.
 #  that's good because it avoids all artifacts from the project being deleted due to the --all.
