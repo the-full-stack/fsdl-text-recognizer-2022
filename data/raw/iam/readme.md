@@ -21,7 +21,7 @@ ls -1 *.png | parallel --eta -j 6 convert '{}' -adaptive-resize 50% '../forms-re
 
 ## Split
 
-The data split we will use is loosely based on the IAM lines Large Writer Independent Text Line Recognition Task (`lwitlrt`) which provides 4 data splits:
+The data split we will use is loosely based on the IAM Lines Large Writer Independent Text Line Recognition Task (`lwitlrt`) which provides 4 data splits:
  - Train: has 6,161 text lines from 747 pages written by 283 writers
  - Validation 1: has 900 text lines from 105 pages written by 46 writers
  - Validation 2: has 940 text lines from 115 pages written by 43 writers
