@@ -142,8 +142,8 @@ def _filter_filters(lines):
 def _replace_data_dirname(lines):
     filtered_lines = []
     for line in lines:
-        if line == '        return Path(__file__).resolve().parents[2] / "data"':
-            line = '        return Path(__file__).resolve().parents[3] / "data"'
+        if 'Path(__file__).resolve().parents[2] / "data"' in line:
+            line = line.replace(".parents[2]", ".parents[3]")
         filtered_lines.append(line)
     return filtered_lines
 
