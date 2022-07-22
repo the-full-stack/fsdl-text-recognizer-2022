@@ -22,6 +22,7 @@ common:
   - text_recognizer/util.py
 02:
   - notebooks/lab02a_lightning.ipynb
+  - notebooks/lab02b_cnn.ipynb
   - text_recognizer/callbacks/__init__.py
   - text_recognizer/callbacks/logging/__init__.py
   - text_recognizer/callbacks/logging/model.py
@@ -33,6 +34,7 @@ common:
   - text_recognizer/data/emnist_essentials.json
   - text_recognizer/data/emnist_lines.py
   - text_recognizer/data/mnist.py
+  - text_recognizer/data/sentence_generator.py
   - text_recognizer/lit_models/__init__.py
   - text_recognizer/lit_models/base.py
   - text_recognizer/lit_models/metrics.py
