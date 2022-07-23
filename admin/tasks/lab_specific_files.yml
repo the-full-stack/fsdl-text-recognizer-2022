@@ -17,17 +17,14 @@ common:
   - notebooks/lab01_pytorch.ipynb
   - text_recognizer/__init__.py
   - text_recognizer/data/util.py
+  - text_recognizer/metadata/mnist.py
+  - text_recognizer/metadata/shared.py
   - text_recognizer/models/__init__.py
   - text_recognizer/models/mlp.py
   - text_recognizer/util.py
 02:
   - notebooks/lab02a_lightning.ipynb
   - notebooks/lab02b_cnn.ipynb
-  - text_recognizer/callbacks/__init__.py
-  - text_recognizer/callbacks/logging/__init__.py
-  - text_recognizer/callbacks/logging/model.py
-  - text_recognizer/callbacks/logging/optim.py
-  - text_recognizer/callbacks/logging/util.py
   - text_recognizer/data/__init__.py
   - text_recognizer/data/base_data_module.py
   - text_recognizer/data/emnist.py
@@ -37,16 +34,24 @@ common:
   - text_recognizer/data/sentence_generator.py
   - text_recognizer/lit_models/__init__.py
   - text_recognizer/lit_models/base.py
-  - text_recognizer/lit_models/metrics.py
   - text_recognizer/metadata/emnist.py
   - text_recognizer/metadata/emnist_lines.py
-  - text_recognizer/metadata/mnist.py
-  - text_recognizer/metadata/shared.py
   - text_recognizer/models/cnn.py
   - text_recognizer/models/line_cnn_simple.py
-  - text_recognizer/stems/base.py
-  - text_recognizer/stems/line.py
-  - text_recognizer/stems/mnist.py
+  - text_recognizer/stems/image.py
   - training/__init__.py
   - training/run_experiment.py
   - training/util.py
+03:
+  - notebooks/lab03_transformers.ipynb
+  - text_recognizer/data/iam.py
+  - text_recognizer/data/iam_paragraphs.py
+  - text_recognizer/lit_models/metrics.py
+  - text_recognizer/metadata/iam.py
+  - text_recognizer/models/resnet_transformer.py
+  - text_recognizer/models/transformer_util.py
+04:
+  - text_recognizer/callbacks/__init__.py
+  - text_recognizer/callbacks/model.py
+  - text_recognizer/callbacks/optim.py
+  - text_recognizer/callbacks/util.py
