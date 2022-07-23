@@ -6,7 +6,6 @@ from torch import Tensor
 import torch.nn as nn
 
 
-# Hide lines below until Lab 07
 class PositionalEncodingImage(nn.Module):
     """
     Module used to add 2-D positional encodings to the feature-map produced by the encoder.
@@ -40,9 +39,6 @@ class PositionalEncodingImage(nn.Module):
         assert x.shape[1] == self.pe.shape[0]  # type: ignore
         x = x + self.pe[:, : x.size(2), : x.size(3)]  # type: ignore
         return x
-
-
-# Hide lines above until Lab 07
 
 
 class PositionalEncoding(torch.nn.Module):
