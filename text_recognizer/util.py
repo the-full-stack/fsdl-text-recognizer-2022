@@ -44,7 +44,7 @@ def temporary_working_directory(working_dir: Union[str, Path]):
         os.chdir(curdir)
 
 
-# Hide lines below until Lab 09
+# Hide lines below until Lab 08
 def read_b64_image(b64_string, grayscale=False):
     """Load base64-encoded images."""
     try:
@@ -63,7 +63,7 @@ def encode_b64_image(image, format="png", grayscale=False):
     return encoded_image
 
 
-# Hide lines above until Lab 09
+# Hide lines above until Lab 08
 
 
 def compute_sha256(filename: Union[Path, str]):
