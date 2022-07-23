@@ -7,12 +7,11 @@ import pytorch_lightning as pl
 from pytorch_lightning.utilities.rank_zero import rank_zero_info, rank_zero_only
 import torch
 
-from text_recognizer import lit_models
-
 # Hide lines below until Lab 04
-from text_recognizer.callbacks import logging
+from text_recognizer import callbacks as cb
 
 # Hide lines above until Lab 04
+from text_recognizer import lit_models
 from training.util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
 
 
@@ -163,7 +162,7 @@ def main():
         logger.watch(model, log_freq=max(100, args.log_every_n_steps))
         logger.log_hyperparams(vars(args))
         experiment_dir = logger.experiment.dir
-    callbacks += [logging.ModelSizeLogger(), logging.LearningRateMonitor()]
+    callbacks += [cb.ModelSizeLogger(), cb.LearningRateMonitor()]
     # Hide lines above until Lab 04
     if args.stop_early:
         early_stopping_callback = pl.callbacks.EarlyStopping(
@@ -173,7 +172,7 @@ def main():
 
     # Hide lines below until Lab 04
     if args.wandb and args.loss in ("transformer",):
-        callbacks.append(logging.ImageToTextLogger())
+        callbacks.append(cb.ImageToTextLogger())
 
     # Hide lines above until Lab 04
     # Hide lines below until Lab 05
