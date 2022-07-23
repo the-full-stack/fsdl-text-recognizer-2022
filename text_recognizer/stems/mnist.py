@@ -1,7 +1,7 @@
 import torch
 from torchvision import transforms
 
-from text_recognizer.stems.base import ImageStem
+from text_recognizer.stems.image import ImageStem
 
 
 class MNISTStem(ImageStem):

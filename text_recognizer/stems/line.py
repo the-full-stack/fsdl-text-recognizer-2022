@@ -5,7 +5,7 @@ from torchvision import transforms
 
 
 import text_recognizer.metadata.iam_lines as metadata
-from text_recognizer.stems.base import ImageStem
+from text_recognizer.stems.image import ImageStem
 
 
 class LineStem(ImageStem):

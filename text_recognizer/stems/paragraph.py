@@ -3,7 +3,7 @@ from PIL import Image
 import torchvision.transforms as transforms
 
 import text_recognizer.metadata.iam_paragraphs as metadata
-from text_recognizer.stems.base import ImageStem
+from text_recognizer.stems.image import ImageStem
 
 
 IMAGE_SCALE_FACTOR = metadata.IMAGE_SCALE_FACTOR
