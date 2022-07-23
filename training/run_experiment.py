@@ -8,7 +8,11 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_info, rank_zero_only
 import torch
 
 from text_recognizer import lit_models
+
+# Hide lines below until Lab 04
 from text_recognizer.callbacks import logging
+
+# Hide lines above until Lab 04
 from training.util import DATA_CLASS_MODULE, import_class, MODEL_CLASS_MODULE, setup_data_and_model_from_args
 
 
@@ -28,20 +32,22 @@ def _setup_parser():
     parser.set_defaults(max_epochs=1)
 
     # Basic arguments
-    # Hide lines below until Lab 05
+    # Hide lines below until Lab 04
     parser.add_argument(
         "--wandb",
         action="store_true",
         default=False,
         help="If passed, logs experiment results to Weights & Biases. Otherwise logs only to local Tensorboard.",
     )
-    # Hide lines above until Lab 05
+    # Hide lines above until Lab 04
+    # Hide lines below until Lab 05
     parser.add_argument(
         "--profile",
         action="store_true",
         default=False,
         help="If passed, uses the PyTorch Profiler to track computation, exported as a Chrome-style trace.",
     )
+    # Hide lines above until Lab 05
     parser.add_argument(
         "--data_class",
         type=str,
@@ -115,12 +121,12 @@ def main():
     args = parser.parse_args()
     data, model = setup_data_and_model_from_args(args)
 
-    if args.loss not in ("transformer",):
-        lit_model_class = lit_models.BaseLitModel
-    # Hide lines below until Lab 04
+    lit_model_class = lit_models.BaseLitModel
+
+    # Hide lines below until Lab 03
     if args.loss == "transformer":
         lit_model_class = lit_models.TransformerLitModel
-    # Hide lines above until Lab 04
+    # Hide lines above until Lab 03
 
     if args.load_checkpoint is not None:
         lit_model = lit_model_class.load_from_checkpoint(args.load_checkpoint, args=args, model=model)
@@ -133,9 +139,14 @@ def main():
     experiment_dir = logger.log_dir
 
     goldstar_metric = "validation/cer" if args.loss in ("transformer",) else "validation/loss"
+    filename_format = "epoch={epoch:04d}-validation.loss={validation/loss:.3f}"
+    # Hide lines below until Lab 03
+    if goldstar_metric == "validation/cer":
+        filename_format += "-validation.cer={validation/cer:.3f}"
+    # Hide lines above until Lab 03
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
         save_top_k=5,
-        filename="epoch={epoch:04d}-validation.loss={validation/loss:.3f}-validation.cer={validation/cer:.3f}",
+        filename=filename_format,
         monitor=goldstar_metric,
         mode="min",
         auto_insert_metric_name=False,
@@ -145,32 +156,34 @@ def main():
 
     summary_callback = pl.callbacks.ModelSummary(max_depth=2)
 
-    # Hide lines below until Lab 05
+    callbacks = [summary_callback, checkpoint_callback]
+    # Hide lines below until Lab 04
     if args.wandb:
         logger = pl.loggers.WandbLogger(log_model="all", save_dir=str(log_dir), job_type="train")
         logger.watch(model, log_freq=max(100, args.log_every_n_steps))
         logger.log_hyperparams(vars(args))
         experiment_dir = logger.experiment.dir
-
-    # Hide lines above until Lab 05
-    callbacks = [summary_callback, checkpoint_callback, logging.ModelSizeLogger(), logging.LearningRateMonitor()]
+    callbacks += [logging.ModelSizeLogger(), logging.LearningRateMonitor()]
+    # Hide lines above until Lab 04
     if args.stop_early:
         early_stopping_callback = pl.callbacks.EarlyStopping(
             monitor="validation/loss", mode="min", patience=args.stop_early
         )
         callbacks.append(early_stopping_callback)
 
-    # Hide lines below until Lab 05
+    # Hide lines below until Lab 04
     if args.wandb and args.loss in ("transformer",):
         callbacks.append(logging.ImageToTextLogger())
 
-    # Hide lines above until Lab 05
+    # Hide lines above until Lab 04
+    # Hide lines below until Lab 05
     if args.profile:
         sched = torch.profiler.schedule(wait=0, warmup=3, active=4, repeat=0)
         profiler = pl.profiler.PyTorchProfiler(export_to_chrome=True, schedule=sched, dirpath=experiment_dir)
         profiler.STEP_FUNCTIONS = {"training_step"}  # only profile training
     else:
         profiler = pl.profiler.PassThroughProfiler()
+    # Hide lines above until Lab 05
 
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, profiler=profiler)
 
@@ -178,16 +191,18 @@ def main():
 
     trainer.fit(lit_model, datamodule=data)
 
+    # Hide lines below until Lab 05
     trainer.profiler = pl.profiler.PassThroughProfiler()  # turn profiling off during testing
+    # Hide lines above until Lab 05
     trainer.test(lit_model, datamodule=data)
 
-    # Hide lines below until Lab 05
+    # Hide lines below until Lab 04
     best_model_path = checkpoint_callback.best_model_path
     if best_model_path:
         rank_zero_info(f"Best model saved at: {best_model_path}")
         if args.wandb:
             rank_zero_info("Best model also uploaded to W&B ")
-    # Hide lines above until Lab 05
+    # Hide lines above until Lab 04
 
 
 if __name__ == "__main__":
