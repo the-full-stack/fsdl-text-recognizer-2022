@@ -9,7 +9,7 @@ IGNORE_PATTERN="${2:-99_}"
 # use https://regex101.com/r/yjcs1Z/3 to an interactive regex testing tool
 
 # use environment variables to control notebook bootstrapping behavior, see notebook setup cells and https://fsdl.me/bootstrap-gist
-FSDL_REPO="$(basename "$(pwd)")"
+FSDL_REPO=$(basename "$(git rev-parse --show-toplevel)")
 export FSDL_REPO
 
 # look inside notebooks dir for .ipynbs that are not nbconvert files and that match the pattern and not the ignore and pass them to nbconvert to run
