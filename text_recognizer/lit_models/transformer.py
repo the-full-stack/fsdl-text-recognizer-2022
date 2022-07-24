@@ -22,7 +22,7 @@ class TransformerLitModel(BaseImageToTextLitModel):
     def forward(self, x):
         return self.model(x)
 
-    def training_forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    def teacher_forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         """Uses provided sequence y as guide for non-autoregressive encoding-decoding of x.
 
         Parameters
@@ -43,7 +43,7 @@ class TransformerLitModel(BaseImageToTextLitModel):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        logits = self.training_forward(x, y[:, :-1])
+        logits = self.teacher_forward(x, y[:, :-1])
         loss = self.loss_fn(logits, y[:, 1:])
 
         self.log("train/loss", loss)
@@ -61,7 +61,7 @@ class TransformerLitModel(BaseImageToTextLitModel):
     def validation_step(self, batch, batch_idx):
         x, y = batch
         # compute loss as in training, for comparison
-        logits = self.training_forward(x, y[:, :-1])
+        logits = self.teacher_forward(x, y[:, :-1])
         loss = self.loss_fn(logits, y[:, 1:])
 
         self.log("validation/loss", loss, prog_bar=True, sync_dist=True)
@@ -84,7 +84,7 @@ class TransformerLitModel(BaseImageToTextLitModel):
     def test_step(self, batch, batch_idx):
         x, y = batch
         # compute loss as in training, for comparison
-        logits = self.training_forward(x, y[:, :-1])
+        logits = self.teacher_forward(x, y[:, :-1])
         loss = self.loss_fn(logits, y[:, 1:])
 
         self.log("test/loss", loss, prog_bar=True, sync_dist=True)
