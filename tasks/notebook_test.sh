@@ -12,5 +12,5 @@ IGNORE_PATTERN="${2:-99_}"
 FSDL_REPO=$(basename "$(git rev-parse --show-toplevel)")
 export FSDL_REPO
 
-# look inside notebooks dir for .ipynbs that are not nbconvert files and that match the pattern and not the ignore and pass them to nbconvert to run
+# look inside notebooks dir for .ipynbs that are not nbconvert files and that match the selector and not the ignore and pass them to nbconvert to run
 find notebooks -maxdepth 1 | grep \.ipynb$ | grep -v nbconvert | grep "$SELECT_PATTERN" | grep -v "$IGNORE_PATTERN" | xargs jupyter nbconvert --to notebook --execute

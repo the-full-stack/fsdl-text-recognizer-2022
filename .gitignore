@@ -19,6 +19,7 @@ __pycache__
 # notebooks
 .ipynb_checkpoints
 *.nbconvert*.ipynb
+.notebook_test.sh
 
 # Distribution / packaging
 .Python
