@@ -175,6 +175,7 @@ def main():
         callbacks.append(cb.ImageToTextLogger())
 
     # Hide lines above until Lab 04
+    trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger)
     # Hide lines below until Lab 05
     if args.profile:
         sched = torch.profiler.schedule(wait=0, warmup=3, active=4, repeat=0)
@@ -182,9 +183,9 @@ def main():
         profiler.STEP_FUNCTIONS = {"training_step"}  # only profile training
     else:
         profiler = pl.profiler.PassThroughProfiler()
-    # Hide lines above until Lab 05
 
-    trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, profiler=profiler)
+    trainer.profiler = profiler
+    # Hide lines above until Lab 05
 
     trainer.tune(lit_model, datamodule=data)  # If passing --auto_lr_find, this will set learning rate
 
