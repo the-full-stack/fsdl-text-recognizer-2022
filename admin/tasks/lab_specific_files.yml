@@ -4,7 +4,6 @@ common:
   - environment.yml
   - LICENSE.txt
   - Makefile
-  - notebooks/lab00_overview.ipynb
   - pyproject.toml
   - requirements/dev-lint.in
   - requirements/dev.in
