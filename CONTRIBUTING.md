@@ -279,7 +279,7 @@ and update the local environment.
 
 <details> <summary>
   <h3> <code>dev</code>elopment and <code>lint</code>ing. </h3> Click to expand.
-  
+
   These are the libraries used to do code quality assurance,
   including linting.
   </summary>
