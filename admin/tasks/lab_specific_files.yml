@@ -46,9 +46,13 @@ common:
   - text_recognizer/data/iam.py
   - text_recognizer/data/iam_paragraphs.py
   - text_recognizer/lit_models/metrics.py
+  - text_recognizer/lit_models/transformer.py
+  - text_recognizer/lit_models/util.py
   - text_recognizer/metadata/iam.py
+  - text_recognizer/metadata/iam_paragraphs.py
   - text_recognizer/models/resnet_transformer.py
   - text_recognizer/models/transformer_util.py
+  - text_recognizer/stems/paragraph.py
 04:
   - text_recognizer/callbacks/__init__.py
   - text_recognizer/callbacks/model.py
