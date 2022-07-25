@@ -3,6 +3,7 @@ boltons
 coverage[toml]
 defusedxml
 itermplot
+ipywidgets
 matplotlib
 notebook
 nltk

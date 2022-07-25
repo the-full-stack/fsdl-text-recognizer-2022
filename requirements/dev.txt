@@ -124,11 +124,19 @@ importlib-resources==5.7.0
 iniconfig==1.1.1
     # via pytest
 ipykernel==4.10.1
-    # via notebook
+    # via
+    #   ipywidgets
+    #   notebook
 ipython==7.32.0
-    # via ipykernel
+    # via
+    #   ipykernel
+    #   ipywidgets
 ipython-genutils==0.2.0
-    # via notebook
+    # via
+    #   ipywidgets
+    #   notebook
+ipywidgets==7.7.1
+    # via -r requirements/dev.in
 itermplot==0.331
     # via -r requirements/dev.in
 jedi==0.18.1
@@ -152,6 +160,8 @@ jupyter-core==4.9.2
     #   nbconvert
     #   nbformat
     #   notebook
+jupyterlab-widgets==1.1.1
+    # via ipywidgets
 kiwisolver==1.4.2
     # via
     #   -c requirements/prod.txt
@@ -187,7 +197,9 @@ nltk==3.7
 nodeenv==1.6.0
     # via pre-commit
 notebook==5.3.1
-    # via -r requirements/dev.in
+    # via
+    #   -r requirements/dev.in
+    #   widgetsnbextension
 numpy==1.21.6
     # via
     #   -c requirements/prod.txt
@@ -365,6 +377,7 @@ traitlets==5.1.1
     # via
     #   ipykernel
     #   ipython
+    #   ipywidgets
     #   jupyter-client
     #   jupyter-core
     #   matplotlib-inline
@@ -400,6 +413,8 @@ werkzeug==2.1.2
     # via tensorboard
 wheel==0.37.1
     # via tensorboard
+widgetsnbextension==3.6.1
+    # via ipywidgets
 yarl==1.7.2
     # via
     #   -c requirements/prod.txt
