@@ -12,5 +12,9 @@ IGNORE_PATTERN="${2:-99_}"
 FSDL_REPO=$(basename "$(git rev-parse --show-toplevel)")
 export FSDL_REPO
 
+# setting a maximum allowable runtime, in seconds, for any single cell
+#  note that this will be hardware dependent, so we add a 20% buffer above the 5 minute target
+MAX_RUNTIME=360
+
 # look inside notebooks dir for .ipynbs that are not nbconvert files and that match the selector and not the ignore and pass them to nbconvert to run
-find notebooks -maxdepth 1 | grep \.ipynb$ | grep -v nbconvert | grep "$SELECT_PATTERN" | grep -v "$IGNORE_PATTERN" | xargs jupyter nbconvert --to notebook --execute
+find notebooks -maxdepth 1 | grep \.ipynb$ | grep -v nbconvert | grep "$SELECT_PATTERN" | grep -v "$IGNORE_PATTERN" | xargs jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=$MAX_RUNTIME --execute
