@@ -32,3 +32,4 @@ We will set up monitoring that alerts us to potential issues in our model using 
 | Lab 01: Deep Neural Networks in PyTorch | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://fsdl.me/lab01-colab) |
 | Lab 02a: PyTorch Lightning | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://fsdl.me/lab02a-colab) |
 | Lab 02b: Training a CNN on Synthetic Handwriting Data | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://fsdl.me/lab02b-colab) |
+| Lab 03: Transformers and Paragraphs | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](http://fsdl.me/lab03-colab) |
