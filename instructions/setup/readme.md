@@ -3,9 +3,9 @@
 Deep learning requires access to accelerated computation hardware.
 Most commonly, those are NVIDIA GPUs or Google TPUs.
 
-If you have access to a computer that has an NVIDIA GPU and runs Linux, you're welcome to [set it up](#Local) for local user.
+If you have access to a computer that has an NVIDIA GPU and runs Linux, you're welcome to [set it up](#Local) for local use.
 
-If you don't, you can compute using [Google Colab](#Colab).
+If you don't, you can get free compute with [Google Colab](#Colab).
 
 ## Colab
 
@@ -17,8 +17,12 @@ The preferred way to interact with the labs on Colab is just to click on badges 
   <a href="http://fsdl.me/lab01-colab"> <img src=https://colab.research.google.com/assets/colab-badge.svg width=240> </a>
 </div> <br>
 
+All setup is handled automatically,
+so you can immediately start working on the labs.
+
 But if you just want to use the codebase, then
-go to [https://colab.research.google.com](https://colab.research.google.com), and create a new notebook.
+go to [https://colab.research.google.com](https://colab.research.google.com)
+and create a new notebook.
 
 Connect your new notebook to a GPU runtime by doing Runtime > Change Runtime type > GPU.
 ![](colab_runtime.png)
