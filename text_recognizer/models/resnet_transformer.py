@@ -46,7 +46,7 @@ class ResnetTransformer(nn.Module):
         tf_layers = self.args.get("tf_layers", TF_LAYERS)
 
         # ## Encoder part - should output  vector sequence of length self.dim per sample
-        resnet = torchvision.models.resnet18(pretrained=False)
+        resnet = torchvision.models.resnet18(weights=None)
         self.resnet = torch.nn.Sequential(*(list(resnet.children())[:-2]))  # Exclude AvgPool and Linear layers
         # Resnet will output (B, RESNET_DIM, _H, _W) logits where _H = input_H // 32, _W = input_W // 32
 
