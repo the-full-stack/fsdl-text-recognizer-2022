@@ -103,6 +103,7 @@ class IAMParagraphs(BaseDataModule):
 
         x, y = next(iter(self.train_dataloader()))
         xt, yt = next(iter(self.test_dataloader()))
+        assert (x.max() <= 1) and (xt.max() <= 1)
         data = (
             f"Train/val/test sizes: {len(self.data_train)}, {len(self.data_val)}, {len(self.data_test)}\n"
             f"Train Batch x stats: {(x.shape, x.dtype, x.min(), x.mean(), x.std(), x.max())}\n"
