@@ -1,12 +1,11 @@
 """IAM Original and Synthetic Paragraphs Dataset class."""
 import argparse
 
-from torch.utils.data import ConcatDataset
+from torch.utils.data import ConcatDataset, DataLoader
 
 from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
 from text_recognizer.data.iam_paragraphs import IAMParagraphs
 from text_recognizer.data.iam_synthetic_paragraphs import IAMSyntheticParagraphs
-from torch.utils.data import DataLoader
 
 
 class IAMOriginalAndSyntheticParagraphs(BaseDataModule):
@@ -39,22 +38,15 @@ class IAMOriginalAndSyntheticParagraphs(BaseDataModule):
 
         if stage == "fit" or stage is None:
             self.data_train = ConcatDataset([self.iam_paragraphs.data_train, self.iam_syn_paragraphs.data_train])
-            # self.data_val = ConcatDataset([self.iam_paragraphs.data_val, self.iam_syn_paragraphs.data_val])
             self.data_val = self.iam_paragraphs.data_val
-
-            print("\n\n&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-            print(f"Train:: number of samples: {len(self.data_train)}; number of batches: {len(self.data_train) / self.batch_size}; number of batches per GPU (8): {len(self.data_train) / (self.batch_size * 8)}")
-            print(f"Val:::: number of samples: {len(self.data_val)}; number of batches: {len(self.data_val) / self.batch_size}; number of batches per GPU (8): {len(self.data_val) / (self.batch_size * 8)}")
-            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n")
 
         if stage == "test" or stage is None:
             self.data_test = self.iam_paragraphs.data_test
 
     def train_dataloader(self):
-        # I can move synthetic data creation code here and set --reload_dataloaders_every_n_epochs in trainer.fit()
+        # Pair this synthetic data creation with --reload_dataloaders_every_n_epochs argument in trainer.fit()
         self.iam_syn_paragraphs.setup("train_only")
         self.data_train = ConcatDataset([self.iam_paragraphs.data_train, self.iam_syn_paragraphs.data_train])
-        print(f"Train:: number of samples: {len(self.data_train)}; number of batches: {len(self.data_train) / self.batch_size}; number of batches per GPU (8): {len(self.data_train) / (self.batch_size * 8)}")
         return DataLoader(
             self.data_train,
             shuffle=True,
