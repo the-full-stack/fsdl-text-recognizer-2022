@@ -14,9 +14,9 @@ from text_recognizer.data.iam_paragraphs import (
     get_dataset_properties,
     IAMParagraphs,
 )
-from text_recognizer.stems.paragraph import ParagraphStem
 from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
 import text_recognizer.metadata.iam_synthetic_paragraphs as metadata
+from text_recognizer.stems.paragraph import ParagraphStem
 
 IMAGE_SCALE_FACTOR = metadata.IMAGE_SCALE_FACTOR
 NEW_LINE_TOKEN = metadata.NEW_LINE_TOKEN
@@ -30,7 +30,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
     def __init__(self, args: argparse.Namespace = None):
         super().__init__(args)
         self.trainval_transform.scale_factor = 1  # we perform rescaling ahead of time, in prepare_data
-        self.transform.scale_factor = 1  # we perform rescaling ahead of time, in prepare_data; not setting this was the problem
+        self.transform.scale_factor = 1
 
     def prepare_data(self, *args, **kwargs) -> None:
         """
@@ -46,7 +46,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         iam = IAM()
         iam.prepare_data()
 
-        for split in ["train", "val"]:  # synthetic dataset is only used in training phase
+        for split in ["train"]:  # synthetic dataset is only used in training phase
             rank_zero_info(f"Cropping IAM line regions and loading labels for {split} data split...")
             crops, labels = line_crops_and_labels(iam, split)
 
@@ -66,7 +66,6 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
         if stage in ["fit", "train_only", None]:
             self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
-            # self.data_val = _load_dataset(split="val", transform=self.transform)
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
@@ -81,7 +80,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
         x, y = next(iter(self.train_dataloader()))
         data = (
-            f"Train/val/test sizes: {len(self.data_train)}, {len(self.data_val)}, 0\n"
+            f"Train/val/test sizes: {len(self.data_train)}, 0, 0\n"
             f"Train Batch x stats: {(x.shape, x.dtype, x.min(), x.mean(), x.std(), x.max())}\n"
             f"Train Batch y stats: {(y.shape, y.dtype, y.min(), y.max())}\n"
         )
@@ -91,7 +90,12 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 def generate_synthetic_paragraphs(
     line_crops: List[Image.Image], line_labels: List[str], max_batch_size: int = 12
 ) -> Tuple[List[Image.Image], List[str]]:
-    """Generate synthetic paragraphs and corresponding labels by randomly joining different subsets of crops."""
+    """
+    Generate synthetic paragraphs and corresponding labels by randomly joining different subsets of crops.
+    These synthetic paragraphs are generated such that the number of paragraphs with 1 line of text is greater
+    than the number of paragraphs with 2 lines of text is greater than the number of paragraphs with 3 lines of text
+    and so on.
+    """
     paragraph_properties = get_dataset_properties()
 
     indices = list(range(len(line_labels)))
@@ -111,10 +115,14 @@ def generate_synthetic_paragraphs(
         generate_random_batches(values=indices, min_batch_size=2, max_batch_size=max_batch_size)
     )
     batched_indices_list.extend(
-        generate_random_batches(values=indices, min_batch_size=(2 * max_batch_size) // 4 + 1, max_batch_size=max_batch_size)
+        generate_random_batches(
+            values=indices, min_batch_size=(2 * max_batch_size) // 4 + 1, max_batch_size=max_batch_size
+        )
     )
     batched_indices_list.extend(
-        generate_random_batches(values=indices, min_batch_size=(3 * max_batch_size) // 4 + 1, max_batch_size=max_batch_size)
+        generate_random_batches(
+            values=indices, min_batch_size=(3 * max_batch_size) // 4 + 1, max_batch_size=max_batch_size
+        )
     )
     # assert sorted(list(itertools.chain(*batched_indices_list))) == indices
 
