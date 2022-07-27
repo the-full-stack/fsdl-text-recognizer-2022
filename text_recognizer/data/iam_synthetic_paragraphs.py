@@ -90,7 +90,12 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 def generate_synthetic_paragraphs(
     line_crops: List[Image.Image], line_labels: List[str], max_batch_size: int = 12
 ) -> Tuple[List[Image.Image], List[str]]:
-    """Generate synthetic paragraphs and corresponding labels by randomly joining different subsets of crops."""
+    """
+    Generate synthetic paragraphs and corresponding labels by randomly joining different subsets of crops.
+    These synthetic paragraphs are generated such that the number of paragraphs with 1 line of text is greater
+    than the number of paragraphs with 2 lines of text is greater than the number of paragraphs with 3 lines of text
+    and so on.
+    """
     paragraph_properties = get_dataset_properties()
 
     indices = list(range(len(line_labels)))
