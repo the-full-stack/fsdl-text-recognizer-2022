@@ -80,7 +80,6 @@ class IAMSyntheticParagraphs(IAMParagraphs):
             return basic
 
         x, y = next(iter(self.train_dataloader()))
-        assert x.max() <= 1
         data = (
             f"Train/val/test sizes: {len(self.data_train)}, {len(self.data_val)}, 0\n"
             f"Train Batch x stats: {(x.shape, x.dtype, x.min(), x.mean(), x.std(), x.max())}\n"
