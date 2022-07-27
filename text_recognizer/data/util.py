@@ -3,7 +3,6 @@ from typing import Any, Callable, Dict, Sequence, Tuple, Union
 
 from PIL import Image
 import torch
-from torchvision import transforms
 
 
 SequenceOrTensor = Union[Sequence, torch.Tensor]
