@@ -46,7 +46,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         iam = IAM()
         iam.prepare_data()
 
-        for split in ["train"]:  # synthetic dataset is only used in training phase
+        for split in ["train", "val"]:  # synthetic dataset is only used in training phase
             rank_zero_info(f"Cropping IAM line regions and loading labels for {split} data split...")
             crops, labels = line_crops_and_labels(iam, split)
 
@@ -64,7 +64,11 @@ class IAMSyntheticParagraphs(IAMParagraphs):
             Y = convert_strings_to_labels(strings=para_labels, mapping=self.inverse_mapping, length=self.output_dims[0])
             return BaseDataset(X, Y, transform=transform)
 
-        if stage in ["fit", "train_only", None]:
+        if stage == "fit" or stage is None:
+            self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
+            self.data_val = _load_dataset(split="val", transform=self.transform)
+
+        if stage == "train_only":
             self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
 
     def __repr__(self) -> str:
@@ -80,7 +84,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
         x, y = next(iter(self.train_dataloader()))
         data = (
-            f"Train/val/test sizes: {len(self.data_train)}, 0, 0\n"
+            f"Train/val/test sizes: {len(self.data_train)}, {len(self.data_val)}, 0\n"
             f"Train Batch x stats: {(x.shape, x.dtype, x.min(), x.mean(), x.std(), x.max())}\n"
             f"Train Batch y stats: {(y.shape, y.dtype, y.min(), y.max())}\n"
         )

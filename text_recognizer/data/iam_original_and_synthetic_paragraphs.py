@@ -38,7 +38,15 @@ class IAMOriginalAndSyntheticParagraphs(BaseDataModule):
 
         if stage == "fit" or stage is None:
             self.data_train = ConcatDataset([self.iam_paragraphs.data_train, self.iam_syn_paragraphs.data_train])
-            self.data_val = self.iam_paragraphs.data_val
+            self.data_val = ConcatDataset([self.iam_paragraphs.data_val, self.iam_syn_paragraphs.data_val])
+            # self.data_val = self.iam_paragraphs.data_val
+
+            print("\n\n&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+            num_b = len(self.data_train) / self.batch_size
+            print(f"Train:: #samples: {len(self.data_train)}; #batches: {num_b}; #batches per GPU (8): {num_b / 8}")
+            num_b = len(self.data_val) / self.batch_size
+            print(f"Val:::: #samples: {len(self.data_val)}; #batches: {num_b}; #batches per GPU (8): {num_b / 8}")
+            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n")
 
         if stage == "test" or stage is None:
             self.data_test = self.iam_paragraphs.data_test
