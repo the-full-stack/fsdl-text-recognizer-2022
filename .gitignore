@@ -49,6 +49,7 @@ logs
 flagged
 
 # Misc
+.aws/credentials
 .DS_Store
 _labs
 .mypy_cache
