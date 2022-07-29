@@ -51,6 +51,7 @@ flagged
 # Misc
 .aws/credentials
 .DS_Store
+.env
 _labs
 .mypy_cache
 lab9/requirements.txt
