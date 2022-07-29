@@ -36,6 +36,7 @@ jobs:
         env:
           PYTHONPATH: .
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+          GANTRY_API_KEY: ${{ secrets.GANTRY_API_KEY }}
 
   integration-tests:
     runs-on: ubuntu-latest
@@ -64,3 +65,4 @@ jobs:
         env:
           PYTHONPATH: .
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+          GANTRY_API_KEY: ${{ secrets.GANTRY_API_KEY }}
