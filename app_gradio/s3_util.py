@@ -1,4 +1,5 @@
 import hashlib
+import json
 
 import boto3
 import botocore
@@ -10,14 +11,15 @@ s3 = boto3.resource("s3")
 
 
 def get_bucket(name):
+    """Fetch an S3 bucket with boto3 or create it if it doesn't exist."""
     try:  # try to create a bucket
         name, response = create_bucket(name)
     except botocore.exceptions.ClientError as err:
         # error handling from https://github.com/boto/boto3/issues/1195#issuecomment-495842252
-        status = err.response["ResponseMetadata"]["HTTPStatusCode"]
+        status = err.response["ResponseMetadata"]["HTTPStatusCode"]  # status codes identify particular errors
 
         if status == 409:  # if the bucket exists already,
-            pass  # we don't need to make it
+            pass  # we don't need to make it -- we presume we have write and policy permissions
         else:
             raise err
 
@@ -27,6 +29,7 @@ def get_bucket(name):
 
 
 def create_bucket(name):
+    """Create a bucket with the provided name."""
     session = boto3.session.Session()  # sessions hold on to credentials and config
     current_region = session.region_name  # so we can pull the default region
     bucket_config = {"LocationConstraint": current_region}  # and apply it to the bucket
@@ -79,6 +82,45 @@ def enable_bucket_versioning(bucket):
 
     bucket_versioning = s3.BucketVersioning(bucket)
     return bucket_versioning.enable()
+
+
+def add_access_policy(bucket):
+    """Adds a policy to our bucket that allows the Gantry app to access data."""
+    access_policy = json.dumps(_get_policy(bucket.name))
+    s3.meta.client.put_bucket_policy(Bucket=bucket.name, Policy=access_policy)
+
+
+def _get_policy(bucket_name):
+    """Returns a bucket policy allowing Gantry app access as a JSON-compatible dictionary."""
+    return {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": [
+                        "arn:aws:iam::848836713690:root",
+                        "arn:aws:iam::339325199688:root",
+                        "arn:aws:iam::665957668247:root",
+                    ]
+                },
+                "Action": ["s3:GetObject", "s3:GetObjectVersion"],
+                "Resource": f"arn:aws:s3:::{bucket_name}/*",
+            },
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": [
+                        "arn:aws:iam::848836713690:root",
+                        "arn:aws:iam::339325199688:root",
+                        "arn:aws:iam::665957668247:root",
+                    ]
+                },
+                "Action": "s3:ListBucketVersions",
+                "Resource": f"arn:aws:s3:::{bucket_name}",
+            },
+        ],
+    }
 
 
 def make_identifier(byte_data):
