@@ -84,7 +84,7 @@ def enable_bucket_versioning(bucket):
 def make_identifier(byte_data):
     """Create a unique identifier for a collection of bytes via hashing."""
     # feed them to hashing algo -- security is not critical here, so we use SHA-1
-    hashed_data = hashlib.sha1(byte_data)  # noqa: S303
+    hashed_data = hashlib.sha1(byte_data)  # noqa: S3
     identifier = hashed_data.hexdigest()  # turn it into hexdecimal
 
     return identifier
