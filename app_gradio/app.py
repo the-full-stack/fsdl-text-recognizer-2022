@@ -44,6 +44,7 @@ def main(args):
 
 
 def make_frontend(fn):
+    """Creates a gradio.Interface frontend for an image to text functio."""
     examples_dir = Path("text_recognizer") / "tests" / "support" / "paragraphs"
     example_fnames = [elem for elem in os.listdir(examples_dir) if elem.endswith(".png")]
     example_paths = [examples_dir / fname for fname in example_fnames]
