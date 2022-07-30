@@ -16,5 +16,21 @@ export FSDL_REPO
 #  note that this will be hardware dependent, so we add a 20% buffer above the 5 minute target
 MAX_RUNTIME=360
 
-# look inside notebooks dir for .ipynbs that are not nbconvert files and that match the selector and not the ignore and pass them to nbconvert to run
-find notebooks -maxdepth 1 | grep \.ipynb$ | grep -v nbconvert | grep "$SELECT_PATTERN" | grep -v "$IGNORE_PATTERN" | xargs jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=$MAX_RUNTIME --execute
+# create an array of NOTEBOOK filenames by...
+mapfile -t NOTEBOOKS <<< "$(
+	find notebooks -maxdepth 1 | grep \.ipynb$ | grep -v nbconvert                 | grep "$SELECT_PATTERN"  | grep -v "$IGNORE_PATTERN" | sort)"
+	# 1) searching ./notebooks 2) for .ipynbs  3) that aren't nbconvert files and  4) match the selector and 5) don't match the filter   6) and sorting them
+
+echo "Testing these notebooks: ${NOTEBOOKS[*]}"
+FAILURE=false
+for NOTEBOOK in "${NOTEBOOKS[@]}"
+do  # loop over notebooks, executing each one
+    echo "Testing $NOTEBOOK"
+    jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=$MAX_RUNTIME --execute "$NOTEBOOK" || FAILURE=true
+done
+
+if [ "$FAILURE" = true ]; then
+    echo "Notebook tests failed"
+    exit 1
+fi
+echo "Notebook tests passed"
