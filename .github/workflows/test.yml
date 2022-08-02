@@ -37,6 +37,8 @@ jobs:
           PYTHONPATH: .
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
           GANTRY_API_KEY: ${{ secrets.GANTRY_API_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   integration-tests:
     runs-on: ubuntu-latest
@@ -66,3 +68,5 @@ jobs:
           PYTHONPATH: .
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
           GANTRY_API_KEY: ${{ secrets.GANTRY_API_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
