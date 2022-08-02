@@ -10,7 +10,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""
 def test_local_run():
     """A quick test to make sure we can build the application locally."""
     backend = app.PredictorBackend()
-    frontend = app.make_frontend(fn=backend.run, gantry=True, flagging=True)
+    frontend = app.make_frontend(fn=backend.run)
 
     signal.setitimer(signal.ITIMER_REAL, 10)  # set a timer for ten seconds, then
     try:
