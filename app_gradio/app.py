@@ -96,7 +96,7 @@ def make_frontend(
         fn=fn,  # which Python function are we interacting with?
         outputs=gr.components.Textbox(),  # what output widgets does it need? the default text widget
         # what input widgets does it need? we configure an image widget
-        inputs=gr.inputs.Image(type="pil", label="Handwritten Text"),
+        inputs=gr.components.Image(type="pil", label="Handwritten Text"),
         title="📝 Text Recognizer",  # what should we display at the top of the page?
         thumbnail=FAVICON,  # what should we display when the link is shared, e.g. on social media?
         description=__doc__,  # what should we display just above the interface?

@@ -92,7 +92,7 @@ class GantryImageToTextLogger(gr.FlaggingCallback):
         image_component_idx, text_component_idx = None, None
 
         for idx, component in enumerate(components):
-            if isinstance(component, gr.inputs.Image):
+            if isinstance(component, (gr.inputs.Image, gr.components.Image)):
                 image_component_idx = idx
             elif isinstance(component, (gr.templates.Text, gr.components.Textbox)):
                 text_component_idx = idx
