@@ -3,6 +3,7 @@
 For more on how this application works,
 [check out the GitHub repo](https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022).
 
+<!-- logging content below -->
 ### Flagging
 
 If the model outputs in the top-right are wrong in some way,
