@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional, Union
 
 import gantry
@@ -91,9 +92,9 @@ class GantryImageToTextLogger(gr.FlaggingCallback):
         image_component_idx, text_component_idx = None, None
 
         for idx, component in enumerate(components):
-            if isinstance(component, gr.inputs.Image):
+            if isinstance(component, (gr.inputs.Image, gr.components.Image)):
                 image_component_idx = idx
-            elif isinstance(component, gr.templates.Text):
+            elif isinstance(component, (gr.templates.Text, gr.components.Textbox)):
                 text_component_idx = idx
         if image_component_idx is None:
             raise RuntimeError(f"No image input found in gradio interface with components {components}")
@@ -101,3 +102,9 @@ class GantryImageToTextLogger(gr.FlaggingCallback):
             raise RuntimeError(f"No text output found in gradio interface with components {components}")
 
         return image_component_idx, text_component_idx
+
+
+def get_api_key() -> Optional[str]:
+    """Convenience method for fetching the Gantry API key."""
+    api_key = os.environ.get("GANTRY_API_KEY")
+    return api_key

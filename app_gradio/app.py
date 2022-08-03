@@ -4,13 +4,19 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Callable
 
+# Hide lines below until Lab 08
+import warnings
+
+# Hide lines above until Lab 08
 import gradio as gr
 from PIL import ImageStat
+from PIL.Image import Image
 import requests
 
 # Hide lines below until Lab 08
-from app_gradio.flagging import GantryImageToTextLogger
+from app_gradio.flagging import GantryImageToTextLogger, get_api_key
 from app_gradio.s3_util import make_unique_bucket_name
 
 # Hide lines above until Lab 08
@@ -18,12 +24,11 @@ from text_recognizer.paragraph_text_recognizer import ParagraphTextRecognizer
 import text_recognizer.util as util
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # do not use GPU
-# Hide lines below until Lab 08
-GANTRY_API_KEY = os.environ.get("GANTRY_API_KEY")
-APP_NAME = "fsdl-text-recognizer"
-# Hide lines above until Lab 08
 
 logging.basicConfig(level=logging.INFO)
+# Hide lines below until Lab 08
+DEFAULT_APPLICATION_NAME = "fsdl-text-recognizer"
+# Hide lines above until Lab 08
 
 APP_DIR = Path(__file__).resolve().parent  # what is the directory for this application?
 FAVICON = APP_DIR / "1f95e.png"  # path to a small image for display in browser tab and social media
@@ -34,7 +39,14 @@ DEFAULT_PORT = 11700
 
 def main(args):
     predictor = PredictorBackend(url=args.model_url)
-    frontend = make_frontend(predictor.run)
+    frontend = make_frontend(
+        predictor.run,
+        # Hide lines below until Lab 08
+        flagging=args.flagging,
+        gantry=args.gantry,
+        app_name=args.application
+        # Hide lines above until Lab 08
+    )
     frontend.launch(
         server_name="0.0.0.0",  # make server accessible, binding all interfaces  # noqa: S104
         server_port=args.port,  # set a port to bind to, failing if unavailable
@@ -43,32 +55,59 @@ def main(args):
     )
 
 
-def make_frontend(fn):
-    """Creates a gradio.Interface frontend for an image to text functio."""
+def make_frontend(
+    fn: Callable[[Image], str],
+    # Hide lines below until Lab 08
+    flagging: bool = False,
+    gantry: bool = False,
+    app_name: str = "fsdl-text-recognizer"
+    # Hide lines above until Lab 08
+):
+    """Creates a gradio.Interface frontend for an image to text function."""
     examples_dir = Path("text_recognizer") / "tests" / "support" / "paragraphs"
     example_fnames = [elem for elem in os.listdir(examples_dir) if elem.endswith(".png")]
     example_paths = [examples_dir / fname for fname in example_fnames]
 
     examples = [[str(path)] for path in example_paths]
 
-    readme = _load_readme()
+    allow_flagging = "never"
+    # Hide lines below until Lab 08
+    readme = _load_readme(with_logging=gantry)
+    if flagging:
+        allow_flagging = "manual"
+        api_key = get_api_key()
+        if gantry and api_key:  # if we're logging user feedback to Gantry and we have an API key
+            allow_flagging = "manual"  # turn on Gradio flagging features
+            # callback for logging input images, output text, and feedback to Gantry
+            flagging_callback = GantryImageToTextLogger(application=app_name, api_key=api_key)
+            # that sends images to S3
+            flagging_dir = make_unique_bucket_name(prefix=app_name, seed=api_key)
+        else:  # otherwise, log to a local CSV file
+            if gantry and api_key is None:
+                warnings.warn("No Gantry API key found, logging to local directory instead.")
+            flagging_callback = gr.CSVLogger()
+            flagging_dir = "flagged"
+    else:
+        flagging_callback, flagging_dir = None, None
+    # Hide lines below until Lab 08
 
     # build a basic browser interface to a Python function
     frontend = gr.Interface(
         fn=fn,  # which Python function are we interacting with?
-        outputs="text",  # what output widgets does it need? the default text widget
+        outputs=gr.components.Textbox(),  # what output widgets does it need? the default text widget
         # what input widgets does it need? we configure an image widget
-        inputs=gr.inputs.Image(type="pil", label="Handwritten Text"),
+        inputs=gr.components.Image(type="pil", label="Handwritten Text"),
         title="📝 Text Recognizer",  # what should we display at the top of the page?
         thumbnail=FAVICON,  # what should we display when the link is shared, e.g. on social media?
         description=__doc__,  # what should we display just above the interface?
         article=readme,  # what long-form content should we display below the interface?
         examples=examples,  # which potential inputs should we provide?
         cache_examples=False,  # should we cache those inputs for faster inference? slows down start
+        allow_flagging=allow_flagging,  # should we show users the option to "flag" outputs?
         # Hide lines below until Lab 08
         flagging_options=["incorrect", "offensive", "other"],  # what options do users have for feedback?
-        flagging_callback=GantryImageToTextLogger(application=APP_NAME, api_key=GANTRY_API_KEY),
-        flagging_dir=make_unique_bucket_name(prefix=APP_NAME, seed=GANTRY_API_KEY)
+        flagging_callback=flagging_callback,
+        flagging_dir=flagging_dir
         # Hide lines above until Lab 08
     )
 
@@ -110,6 +149,21 @@ class PredictorBackend:
         return pred, metrics
 
     def _predict_from_endpoint(self, image):
+        """Send an image to an endpoint that accepts JSON and return the predicted text.
+
+        The endpoint should expect a base64 representation of the image, encoded as a string,
+        under the key "image". It should return the predicted text under the key "pred".
+
+        Parameters
+        ----------
+        image
+            A PIL image of handwritten text to be converted into a string.
+
+        Returns
+        -------
+        pred
+            A string containing the predictor's guess of the text in the image.
+        """
         encoded_image = util.encode_b64_image(image)
 
         headers = {"Content-type": "application/json"}
@@ -126,10 +180,18 @@ class PredictorBackend:
         logging.info(f"PRED >begin\n{pred}\nPRED >end")
 
 
-def _load_readme():
+# Hide lines below until Lab 08
+def _load_readme(with_logging=False):
     with open(README) as f:
-        readme = "".join(f.readlines())
+        lines = f.readlines()
+        if not with_logging:
+            lines = lines[: lines.index("<!-- logging content below -->\n")]
+
+        readme = "".join(lines)
     return readme
+
+
+# Hide lines above until Lab 08
 
 
 def _make_parser():
@@ -144,8 +206,26 @@ def _make_parser():
         "--port",
         default=DEFAULT_PORT,
         type=int,
-        help=f"Port on which to expose this server. Default is {DEFAULT_PORT}",
+        help=f"Port on which to expose this server. Default is {DEFAULT_PORT}.",
     )
+    # Hide lines below until Lab 08
+    parser.add_argument(
+        "--flagging",
+        action="store_true",
+        help="Pass this flag to allow users to 'flag' model behavior and provide feedback.",
+    )
+    parser.add_argument(
+        "--gantry",
+        action="store_true",
+        help="Pass --flagging and this flag to log user feedback to Gantry. Requires GANTRY_API_KEY to be defined as an environment variable.",
+    )
+    parser.add_argument(
+        "--application",
+        default=DEFAULT_APPLICATION_NAME,
+        type=str,
+        help=f"Name of the Gantry application to which feedback should be logged, if --gantry and --flagging are passed. Default is {DEFAULT_APPLICATION_NAME}.",
+    )
+    # Hide lines above until Lab 08
 
     return parser
 
