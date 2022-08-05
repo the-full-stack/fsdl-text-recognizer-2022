@@ -89,7 +89,7 @@ def make_frontend(
             flagging_dir = "flagged"
     else:
         flagging_callback, flagging_dir = None, None
-    # Hide lines below until Lab 08
+    # Hide lines above until Lab 08
 
     # build a basic browser interface to a Python function
     frontend = gr.Interface(
