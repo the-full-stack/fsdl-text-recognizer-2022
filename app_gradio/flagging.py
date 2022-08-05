@@ -64,8 +64,8 @@ class GantryImageToTextLogger(gr.FlaggingCallback):
         if username is not None:
             feedback["user"] = username
 
-        image_bytes = read_b64_string(image).read()
-        image_url = self._to_s3(image_bytes)
+        data_type, image_buffer = read_b64_string(image, return_data_type=True)
+        image_url = self._to_s3(image_buffer.read(), filetype=data_type)
         self._to_gantry(image_url, text, feedback)
         self._counter += 1
 
@@ -77,9 +77,9 @@ class GantryImageToTextLogger(gr.FlaggingCallback):
 
         gantry.log_record(self.application, self.version, inputs=inputs, outputs=outputs, feedback=feedback)
 
-    def _to_s3(self, image_bytes, key=None):
+    def _to_s3(self, image_bytes, key=None, filetype=None):
         if key is None:
-            key = s3_util.make_key(image_bytes)
+            key = s3_util.make_key(image_bytes, filetype=filetype)
 
         s3_uri = s3_util.get_uri_of(self.bucket, key)
 
