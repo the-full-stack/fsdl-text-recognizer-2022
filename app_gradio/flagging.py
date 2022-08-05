@@ -50,7 +50,7 @@ class GantryImageToTextLogger(gr.FlaggingCallback):
     def setup(self, components: List[Component], flagging_dir: str):
         """Sets up the GantryImageToTextLogger by creating or attaching to an S3 Bucket."""
         self._counter = 0
-        self.bucket = s3_util.get_bucket(flagging_dir)
+        self.bucket = s3_util.get_or_create_bucket(flagging_dir)
         s3_util.enable_bucket_versioning(self.bucket)
         s3_util.add_access_policy(self.bucket)
         self.image_component_idx, self.text_component_idx = self._find_image_and_text_components(components)
