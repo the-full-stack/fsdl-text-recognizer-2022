@@ -152,4 +152,7 @@ Last, run `export PYTHONPATH=.` before executing any commands later on, or you w
 ModuleNotFoundError: No module named 'text_recognizer'
 ```
 
-In order to not have to set `PYTHONPATH` in every terminal you open, just add that line as the last line of the `~/.bashrc` file using a text editor of your choice (e.g. `nano ~/.bashrc`)
+In order to not have to set `PYTHONPATH` in every terminal you open, just add that line as the last line of the `~/.bashrc` file using a text editor of your choice (e.g. `nano ~/.bashrc`) or by concatenating with `>>`
+```bash
+export PYTHONPATH=.:$PYTHONPATH" >> ~/.bashrc
+```
