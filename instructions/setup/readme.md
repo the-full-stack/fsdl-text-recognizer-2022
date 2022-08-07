@@ -84,6 +84,10 @@ For $10/month, you get priority access to faster GPUs (e.g. [P100 vs K80](https:
 
 Setting up a machine that you can sit in front of or SSH into is easy.
 
+### Watch a walkthrough video [here](https://fsdl.me/2022-local-setup-video).
+
+If you get stuck, it's better to at least [get started with the labs on Colab](https://fsdl.me/lab00-colab), where setup is just a single click, rather than getting frustrated and burning out on annoying environment management, networking, and systems administration issues that aren't as relevant to making ML-powered products.
+
 ### Summary
 
 - `environment.yml` specifies Python and optionally CUDA/CUDNN
