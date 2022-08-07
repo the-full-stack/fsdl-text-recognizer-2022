@@ -38,13 +38,13 @@ class ParagraphStem(ImageStem):
                 random_affine_kwargs = {
                     "degrees": 3,
                     "shear": 6,
-                    "scale": (0.95, 1.05),
+                    "scale": (0.95, 1),
                     "interpolation": transforms.InterpolationMode.BILINEAR,
                 }
             if random_perspective_kwargs is None:
                 random_perspective_kwargs = {
                     "distortion_scale": 0.2,
-                    "p": 0.8,
+                    "p": 0.5,
                     "interpolation": transforms.InterpolationMode.BILINEAR,
                 }
             if gaussian_blur_kwargs is None:
@@ -55,10 +55,10 @@ class ParagraphStem(ImageStem):
             # IMAGE_SHAPE is (576, 640)
             self.pil_transforms = transforms.Compose(
                 [
+                    transforms.ColorJitter(**color_jitter_kwargs),
                     transforms.RandomCrop(
                         size=IMAGE_SHAPE, padding=None, pad_if_needed=True, fill=0, padding_mode="constant"
                     ),
-                    transforms.ColorJitter(**color_jitter_kwargs),
                     transforms.RandomAffine(**random_affine_kwargs),
                     transforms.RandomPerspective(**random_perspective_kwargs),
                     transforms.GaussianBlur(**gaussian_blur_kwargs),
