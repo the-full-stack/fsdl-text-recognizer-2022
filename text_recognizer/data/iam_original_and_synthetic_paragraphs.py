@@ -52,7 +52,7 @@ class IAMOriginalAndSyntheticParagraphs(BaseDataModule):
 
     def train_dataloader(self):
         # Pair this synthetic data creation with --reload_dataloaders_every_n_epochs argument in trainer.fit()
-        self.iam_syn_paragraphs.setup("train_only")
+        self.iam_syn_paragraphs._load_train_dataset()
         self.data_train = ConcatDataset([self.iam_paragraphs.data_train, self.iam_syn_paragraphs.data_train])
         return DataLoader(
             self.data_train,

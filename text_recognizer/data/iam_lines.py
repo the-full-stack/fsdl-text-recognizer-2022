@@ -122,17 +122,13 @@ def line_crops_and_labels(iam: IAM, split: str):
     """Load IAM line labels and regions, and load line image crops."""
     crops = []
     labels = []
-    for filename in iam.form_filenames:
-        if not iam.split_by_id[filename.stem] == split:
-            continue
-        image = util.read_image_pil(filename)
-        image = ImageOps.grayscale(image)
-        image = ImageOps.invert(image)
-        labels += iam.line_strings_by_id[filename.stem]
+    for iam_id in iam.ids_by_split[split]:
+        image = iam.load_image(iam_id)
         crops += [
             image.crop([region[_] for _ in ["x1", "y1", "x2", "y2"]])
-            for region in iam.line_regions_by_id[filename.stem]
+            for region in iam.line_regions_by_id[iam_id]
         ]
+        labels += iam.line_strings_by_id[iam_id]
     assert len(crops) == len(labels)
     return crops, labels
 
@@ -148,13 +144,24 @@ def save_images_and_labels(crops: Sequence[Image.Image], labels: Sequence[str], 
 
 def load_line_crops_and_labels(split: str, data_dirname: Path):
     """Load line crops and labels for given split from processed directory."""
-    with open(data_dirname / split / "_labels.json") as file:
-        labels = json.load(file)
-
-    crop_filenames = sorted((data_dirname / split).glob("*.png"), key=lambda filename: int(Path(filename).stem))
-    crops = [util.read_image_pil(filename, grayscale=True) for filename in crop_filenames]
+    crops = load_line_crops(split, data_dirname)
+    labels = load_line_labels(split, data_dirname)
     assert len(crops) == len(labels)
     return crops, labels
+
+
+def load_line_crops(split: str, data_dirname: Path):
+    """Load line crops for given split from processed directory."""
+    crop_filenames = sorted((data_dirname / split).glob("*.png"), key=lambda filename: int(Path(filename).stem))
+    crops = [util.read_image_pil(filename, grayscale=True) for filename in crop_filenames]
+    return crops
+
+
+def load_line_labels(split: str, data_dirname: Path):
+    """Load line labels for given split from processed directory."""
+    with open(data_dirname / split / "_labels.json") as file:
+        labels = json.load(file)
+    return labels
 
 
 if __name__ == "__main__":
