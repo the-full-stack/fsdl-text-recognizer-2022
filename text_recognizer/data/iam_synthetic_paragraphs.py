@@ -2,22 +2,27 @@
 import argparse
 import random
 from typing import Any, List, Sequence, Tuple
-from boltons.cacheutils import cachedproperty
 
+from boltons.cacheutils import cachedproperty
 import numpy as np
 from PIL import Image
 from pytorch_lightning.utilities.rank_zero import rank_zero_info
 
 from text_recognizer.data.base_data_module import load_and_print_info
 from text_recognizer.data.iam import IAM
-from text_recognizer.data.iam_lines import line_crops_and_labels, load_line_crops, load_line_labels, save_images_and_labels
+from text_recognizer.data.iam_lines import (
+    line_crops_and_labels,
+    load_line_crops,
+    load_line_labels,
+    save_images_and_labels,
+)
 from text_recognizer.data.iam_paragraphs import (
     get_dataset_properties,
     IAMParagraphs,
 )
 from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
 import text_recognizer.metadata.iam_synthetic_paragraphs as metadata
-from text_recognizer.stems.paragraph import ParagraphStem
+
 
 IMAGE_SCALE_FACTOR = metadata.IMAGE_SCALE_FACTOR
 NEW_LINE_TOKEN = metadata.NEW_LINE_TOKEN

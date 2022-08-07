@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Sequence
 
 import numpy as np
-from PIL import Image, ImageFile, ImageOps
+from PIL import Image, ImageFile
 
 from text_recognizer import util
 from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
@@ -125,8 +125,7 @@ def line_crops_and_labels(iam: IAM, split: str):
     for iam_id in iam.ids_by_split[split]:
         image = iam.load_image(iam_id)
         crops += [
-            image.crop([region[_] for _ in ["x1", "y1", "x2", "y2"]])
-            for region in iam.line_regions_by_id[iam_id]
+            image.crop([region[_] for _ in ["x1", "y1", "x2", "y2"]]) for region in iam.line_regions_by_id[iam_id]
         ]
         labels += iam.line_strings_by_id[iam_id]
     assert len(crops) == len(labels)

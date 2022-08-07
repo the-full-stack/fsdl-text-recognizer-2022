@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Callable, Dict, Optional, Sequence, Tuple
 
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image
 from pytorch_lightning.utilities.rank_zero import rank_zero_info
 
 from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
