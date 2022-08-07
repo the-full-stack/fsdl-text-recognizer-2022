@@ -1,7 +1,7 @@
 """Class for loading the IAM dataset, which encompasses both paragraphs and lines, with associated utilities."""
 import os
 from pathlib import Path
-from typing import cast, Dict, List, Optional
+from typing import Any, cast, Dict, List, Optional
 import zipfile
 
 from boltons.cacheutils import cachedproperty
@@ -178,7 +178,7 @@ def _get_word_strings_from_xml_file(filename: str) -> List[str]:
     return [_get_text_from_xml_element(el) for el in xml_word_elements if el.findall("cmp")]
 
 
-def _get_text_from_xml_element(xml_element: ElementTree.Element) -> str:
+def _get_text_from_xml_element(xml_element: Any) -> str:
     """Extract text from any XML element."""
     return xml_element.attrib["text"].replace("&quot;", '"')
 
@@ -210,7 +210,7 @@ def _get_line_regions_from_xml_file(filename: str) -> List[Dict[str, int]]:
     ]
 
 
-def _get_line_elements_from_xml_file(filename: str) -> List[ElementTree.Element]:
+def _get_line_elements_from_xml_file(filename: str) -> List[Any]:
     """Get all line xml elements from xml file."""
     xml_root_element = ElementTree.parse(filename).getroot()  # nosec
     return xml_root_element.findall("handwritten-part/line")
@@ -225,7 +225,7 @@ def _get_word_regions_from_xml_file(filename: str) -> List[Dict[str, int]]:
     return word_regions
 
 
-def _get_word_regions_from_xml_element(line_xml_elem: ElementTree.Element) -> List[Dict[str, int]]:
+def _get_word_regions_from_xml_element(line_xml_elem: Any) -> List[Dict[str, int]]:
     """Get regions of words in a line from line xml element."""
     word_xml_elems = line_xml_elem.findall("word")
     all_word_regions = [_get_region_from_xml_element(xml_elem=el, xml_path="cmp") for el in word_xml_elems]
@@ -261,7 +261,7 @@ def _is_punctuation(word: str) -> bool:
     return len(word) == 1 and word in metadata.PUNCTUATIONS
 
 
-def _get_region_from_xml_element(xml_elem: ElementTree.Element, xml_path: str) -> Optional[Dict[str, int]]:
+def _get_region_from_xml_element(xml_elem: Any, xml_path: str) -> Optional[Dict[str, int]]:
     """
     Get region from input xml element. The region is downsampled because the stored images are also downsampled.
 
