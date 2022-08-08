@@ -141,6 +141,7 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
 
     def _set_seed(self, seed):
         if not self.seed_set:
+            print(f"Setting seed to {seed} for worker {torch.utils.data.get_worker_info()}")
             random.seed(seed)
             self.seed_set = True
 
@@ -149,7 +150,8 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
         self._set_seed(index)  # Since shuffle is True for train dataloaders, the first index will be different on different GPUs
         num_lines = random.randint(self.min_num_lines, self.max_num_lines)
         indices = random.sample(self.ids, k=num_lines)
-        print(f"IAMSyntheticParagraphsDataset.__getitem__({index}):indices: {indices}")
+        # print(f"IAMSyntheticParagraphsDataset.__getitem__({index}):indices: {indices}")
+
         datum = join_line_crops_to_form_paragraph([self.line_crops[i] for i in indices])
 
         labels = NEW_LINE_TOKEN.join([self.line_labels[i] for i in indices])
