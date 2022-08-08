@@ -36,6 +36,8 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
     def __init__(self, args: argparse.Namespace = None):
         super().__init__(args)
+        self.line_crops = None
+        self.line_labels = None
         self.trainval_transform.scale_factor = 1  # we perform rescaling ahead of time, in prepare_data
         self.transform.scale_factor = 1
 
@@ -64,12 +66,21 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         rank_zero_info(f"IAMSyntheticParagraphs.setup({stage}): Loading train IAM paragraph regions and lines...")
 
         if stage == "fit" or stage is None:
+            self._load_crops_and_labels()
             self.data_train = IAMSyntheticParagraphsDataset(
+                line_crops=self.line_crops,
+                line_labels=self.line_labels,
                 dataset_len=64*8*20,    #self.batch_size * max(self.num_gpus, 1) * 10,
                 inverse_mapping=self.inverse_mapping,
                 target_length=self.output_dims[0],
                 transform=self.trainval_transform,
             )
+
+    def _load_crops_and_labels(self):
+        if self.line_crops is None:
+            self.line_crops = load_line_crops("train", PROCESSED_DATA_DIRNAME)
+        if self.line_labels is None:
+            self.line_labels = load_line_labels("train", PROCESSED_DATA_DIRNAME)
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
@@ -106,10 +117,10 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
         function that takes a target and returns the same
     """
 
-    def __init__(self, dataset_len: int, inverse_mapping: dict, target_length: int, transform: Callable = None) -> None:
+    def __init__(self, line_crops: List[Image.Image], line_labels: List[str], dataset_len: int, inverse_mapping: dict, target_length: int, transform: Callable = None) -> None:
         super().__init__()
-        self.line_crops = load_line_crops("train", PROCESSED_DATA_DIRNAME)  # should these be passed externally?
-        self.line_labels = load_line_labels("train", PROCESSED_DATA_DIRNAME)  # should these be passed externally?
+        self.line_crops = line_crops
+        self.line_labels = line_labels
         assert len(self.line_crops) == len(self.line_labels)
 
         self.ids = list(range(len(self.line_labels)))
