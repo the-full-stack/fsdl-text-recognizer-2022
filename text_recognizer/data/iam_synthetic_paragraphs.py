@@ -65,7 +65,7 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
         if stage == "fit" or stage is None:
             self.data_train = IAMSyntheticParagraphsDataset(
-                dataset_len=64*8*20    #self.batch_size * max(self.num_gpus, 1) * 10,
+                dataset_len=64*8*20,    #self.batch_size * max(self.num_gpus, 1) * 10,
                 inverse_mapping=self.inverse_mapping,
                 target_length=self.output_dims[0],
                 transform=self.trainval_transform,
