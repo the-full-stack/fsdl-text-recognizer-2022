@@ -50,17 +50,17 @@ class IAMOriginalAndSyntheticParagraphs(BaseDataModule):
         if stage == "test" or stage is None:
             self.data_test = self.iam_paragraphs.data_test
 
-    def train_dataloader(self):
-        # Pair this synthetic data creation with --reload_dataloaders_every_n_epochs argument in trainer.fit()
-        self.iam_syn_paragraphs._load_train_dataset()
-        self.data_train = ConcatDataset([self.iam_paragraphs.data_train, self.iam_syn_paragraphs.data_train])
-        return DataLoader(
-            self.data_train,
-            shuffle=True,
-            batch_size=self.batch_size,
-            num_workers=self.num_workers,
-            pin_memory=self.on_gpu,
-        )
+    # def train_dataloader(self):
+    #     # Pair this synthetic data creation with --reload_dataloaders_every_n_epochs argument in trainer.fit()
+    #     self.iam_syn_paragraphs._load_train_dataset()
+    #     self.data_train = ConcatDataset([self.iam_paragraphs.data_train, self.iam_syn_paragraphs.data_train])
+    #     return DataLoader(
+    #         self.data_train,
+    #         shuffle=True,
+    #         batch_size=self.batch_size,
+    #         num_workers=self.num_workers,
+    #         pin_memory=self.on_gpu,
+    #     )
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
