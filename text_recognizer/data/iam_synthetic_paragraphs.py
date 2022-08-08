@@ -119,12 +119,8 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
         self.transform = transform
         self.min_num_lines, self.max_num_lines = 1, 12
 
-        # each worker will have its PyTorch seed set to base_seed + worker_id
-        worker_info = torch.utils.data.get_worker_info()
-        print("IAMSyntheticParagraphsDataset.__init__():worker_info", worker_info)
-        if worker_info is not None:
-            print(f"Setting seed to {worker_info.seed} for worker {worker_info}")
-            random.seed(worker_info.seed)
+        self.seed_set = False
+        self._set_seed()
         print("IAMSyntheticParagraphsDataset.__init__():self.dataset_len", self.dataset_len)
 
     def __len__(self) -> int:
@@ -132,9 +128,19 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
         print("IAMSyntheticParagraphsDataset.__len__():self.dataset_len", self.dataset_len)
         return self.dataset_len
 
+    def _set_seed(self):
+        if not self.seed_set:
+            # each worker will have its PyTorch seed set to base_seed + worker_id
+            worker_info = torch.utils.data.get_worker_info()
+            print("IAMSyntheticParagraphsDataset._set_seed():worker_info", worker_info)
+            if worker_info is not None:
+                print(f"Setting seed to {worker_info.seed} for worker")
+                random.seed(worker_info.seed)
+                self.seed_set = True
+
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         """Return a datum and its target, after processing by transforms."""
-        # set seed
+        self._set_seed()
         num_lines = random.randint(self.min_num_lines, self.max_num_lines)
         indices = random.sample(self.ids, k=num_lines)
         print(f"IAMSyntheticParagraphsDataset.__getitem__({index}):indices: {indices}")
