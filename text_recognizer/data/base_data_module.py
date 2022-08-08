@@ -53,7 +53,8 @@ class BaseDataModule(pl.LightningDataModule):
         self.batch_size = self.args.get("batch_size", BATCH_SIZE)
         self.num_workers = self.args.get("num_workers", DEFAULT_NUM_WORKERS)
 
-        self.on_gpu = isinstance(self.args.get("gpus", None), (str, int))
+        self.num_gpus = _get_num_gpus(self.args)
+        self.on_gpu = self.num_gpus > 0
 
         # Make sure to set the variables below in subclasses
         self.input_dims: Tuple[int, ...]
@@ -121,3 +122,14 @@ class BaseDataModule(pl.LightningDataModule):
             num_workers=self.num_workers,
             pin_memory=self.on_gpu,
         )
+
+
+def _get_num_gpus(args) -> int:
+    """Return number of GPUs in args."""
+    gpus = args.get("gpus", None)
+    num_gpus = 0
+    if isinstance(gpus, (str, int)):
+        num_gpus = int(gpus)
+    elif isinstance(gpus, list):
+        num_gpus = len(gpus)
+    return num_gpus
