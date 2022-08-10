@@ -59,21 +59,16 @@ class IAMSyntheticParagraphs(IAMParagraphs):
             crops = [resize_image(crop, IMAGE_SCALE_FACTOR) for crop in crops]
             save_images_and_labels(crops, labels, split, PROCESSED_DATA_DIRNAME)
 
-    @cachedproperty
-    def line_crops(self):
-        return load_processed_line_crops("train", PROCESSED_DATA_DIRNAME)
-
-    @cachedproperty
-    def line_labels(self):
-        return load_processed_line_labels("train", PROCESSED_DATA_DIRNAME)
-
-    def setup(self, stage: str = None) -> None:
+    def setup(self, stage: str = None):
         rank_zero_info(f"IAMSyntheticParagraphs.setup({stage}): Loading trainval IAM paragraph regions and lines...")
 
         if stage == "fit" or stage is None:
-            X, para_labels = generate_synthetic_paragraphs(line_crops=self.line_crops, line_labels=self.line_labels)
-            Y = convert_strings_to_labels(strings=para_labels, mapping=self.inverse_mapping, length=self.output_dims[0])
-            self.data_train = BaseDataset(X, Y, transform=self.trainval_transform)
+            self.data_train = self._synthesize_dataset()
+
+    def _synthesize_dataset(self):
+        X, para_labels = generate_synthetic_paragraphs(line_crops=self.line_crops, line_labels=self.line_labels)
+        Y = convert_strings_to_labels(strings=para_labels, mapping=self.inverse_mapping, length=self.output_dims[0])
+        return BaseDataset(X, Y, transform=self.trainval_transform)
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
@@ -93,6 +88,14 @@ class IAMSyntheticParagraphs(IAMParagraphs):
             f"Train Batch y stats: {(y.shape, y.dtype, y.min(), y.max())}\n"
         )
         return basic + data
+
+    @cachedproperty
+    def line_crops(self):
+        return load_processed_line_crops("train", PROCESSED_DATA_DIRNAME)
+
+    @cachedproperty
+    def line_labels(self):
+        return load_processed_line_labels("train", PROCESSED_DATA_DIRNAME)
 
 
 def generate_synthetic_paragraphs(
