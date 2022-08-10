@@ -11,9 +11,9 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_info
 from text_recognizer.data.base_data_module import load_and_print_info
 from text_recognizer.data.iam import IAM
 from text_recognizer.data.iam_lines import (
-    line_crops_and_labels,
-    load_line_crops,
-    load_line_labels,
+    generate_line_crops_and_labels,
+    load_processed_line_crops,
+    load_processed_line_labels,
     save_images_and_labels,
 )
 from text_recognizer.data.iam_paragraphs import (
@@ -54,18 +54,18 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
         for split in ["train"]:  # synthetic dataset is only used in training phase
             rank_zero_info(f"Cropping IAM line regions and loading labels for {split} data split...")
-            crops, labels = line_crops_and_labels(iam, split)
+            crops, labels = generate_line_crops_and_labels(iam, split)
 
             crops = [resize_image(crop, IMAGE_SCALE_FACTOR) for crop in crops]
             save_images_and_labels(crops, labels, split, PROCESSED_DATA_DIRNAME)
 
     @cachedproperty
     def line_crops(self):
-        return load_line_crops("train", PROCESSED_DATA_DIRNAME)
+        return load_processed_line_crops("train", PROCESSED_DATA_DIRNAME)
 
     @cachedproperty
     def line_labels(self):
-        return load_line_labels("train", PROCESSED_DATA_DIRNAME)
+        return load_processed_line_labels("train", PROCESSED_DATA_DIRNAME)
 
     def setup(self, stage: str = None) -> None:
         rank_zero_info(f"IAMSyntheticParagraphs.setup({stage}): Loading trainval IAM paragraph regions and lines...")

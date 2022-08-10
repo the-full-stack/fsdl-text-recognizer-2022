@@ -1,8 +1,4 @@
-"""IamLinesDataset class.
-
-We will use a processed version of this dataset, without including code that did the processing.
-We will look at how to generate processed data from raw IAM data in the IAMParagraphs Dataset.
-"""
+"""A dataset of lines of handwritten text derived from the IAM dataset."""
 import argparse
 import json
 from pathlib import Path
@@ -26,7 +22,7 @@ TRAIN_FRAC = 0.8
 
 
 class IAMLines(BaseDataModule):
-    """IAM Handwriting database lines."""
+    """Lines of text pulled from the IAM Handwriting database."""
 
     def __init__(self, args: argparse.Namespace = None):
         super().__init__(args)
@@ -51,8 +47,8 @@ class IAMLines(BaseDataModule):
         print("Cropping IAM line regions...")
         iam = IAM()
         iam.prepare_data()
-        crops_trainval, labels_trainval = line_crops_and_labels(iam, "trainval")
-        crops_test, labels_test = line_crops_and_labels(iam, "test")
+        crops_trainval, labels_trainval = generate_line_crops_and_labels(iam, "trainval")
+        crops_test, labels_test = generate_line_crops_and_labels(iam, "test")
 
         shapes = np.array([crop.size for crop in crops_trainval + crops_test])
         aspect_ratios = shapes[:, 0] / shapes[:, 1]
@@ -70,7 +66,7 @@ class IAMLines(BaseDataModule):
             assert image_width <= metadata.IMAGE_WIDTH
 
         if stage == "fit" or stage is None:
-            x_trainval, labels_trainval = load_line_crops_and_labels("trainval", PROCESSED_DATA_DIRNAME)
+            x_trainval, labels_trainval = load_processed_crops_and_labels("trainval", PROCESSED_DATA_DIRNAME)
             assert self.output_dims[0] >= max([len(_) for _ in labels_trainval]) + 2  # Add 2 for start/end tokens.
 
             y_trainval = convert_strings_to_labels(labels_trainval, self.inverse_mapping, length=self.output_dims[0])
@@ -78,9 +74,8 @@ class IAMLines(BaseDataModule):
 
             self.data_train, self.data_val = split_dataset(base_dataset=data_trainval, fraction=TRAIN_FRAC, seed=42)
 
-        # Note that test data does not go through augmentation transforms
         if stage == "test" or stage is None:
-            x_test, labels_test = load_line_crops_and_labels("test", PROCESSED_DATA_DIRNAME)
+            x_test, labels_test = load_processed_crops_and_labels("test", PROCESSED_DATA_DIRNAME)
             assert self.output_dims[0] >= max([len(_) for _ in labels_test]) + 2
 
             y_test = convert_strings_to_labels(labels_test, self.inverse_mapping, length=self.output_dims[0])
@@ -118,16 +113,17 @@ class IAMLines(BaseDataModule):
         return basic + data
 
 
-def line_crops_and_labels(iam: IAM, split: str):
-    """Load IAM line labels and regions, and load line image crops."""
-    crops = []
-    labels = []
+def generate_line_crops_and_labels(iam: IAM, split: str):
+    """Load both cropped lines and associated labels from IAM."""
+    crops, labels = [], []
     for iam_id in iam.ids_by_split[split]:
-        image = iam.load_image(iam_id)
-        crops += [
-            image.crop([region[_] for _ in ["x1", "y1", "x2", "y2"]]) for region in iam.line_regions_by_id[iam_id]
-        ]
         labels += iam.line_strings_by_id[iam_id]
+
+        image = iam.load_image(iam_id)
+        for line in iam.line_regions_by_id[iam_id]:
+            coords = [line[point] for point in ["x1", "y1", "x2", "y2"]]
+            crops.append(image.crop(coords))
+
     assert len(crops) == len(labels)
     return crops, labels
 
@@ -141,22 +137,22 @@ def save_images_and_labels(crops: Sequence[Image.Image], labels: Sequence[str], 
         crop.save(data_dirname / split / f"{ind}.png")
 
 
-def load_line_crops_and_labels(split: str, data_dirname: Path):
+def load_processed_crops_and_labels(split: str, data_dirname: Path):
     """Load line crops and labels for given split from processed directory."""
-    crops = load_line_crops(split, data_dirname)
-    labels = load_line_labels(split, data_dirname)
+    crops = load_processed_line_crops(split, data_dirname)
+    labels = load_processed_line_labels(split, data_dirname)
     assert len(crops) == len(labels)
     return crops, labels
 
 
-def load_line_crops(split: str, data_dirname: Path):
+def load_processed_line_crops(split: str, data_dirname: Path):
     """Load line crops for given split from processed directory."""
     crop_filenames = sorted((data_dirname / split).glob("*.png"), key=lambda filename: int(Path(filename).stem))
     crops = [util.read_image_pil(filename, grayscale=True) for filename in crop_filenames]
     return crops
 
 
-def load_line_labels(split: str, data_dirname: Path):
+def load_processed_line_labels(split: str, data_dirname: Path):
     """Load line labels for given split from processed directory."""
     with open(data_dirname / split / "_labels.json") as file:
         labels = json.load(file)
