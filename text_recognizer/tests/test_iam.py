@@ -2,13 +2,6 @@
 from text_recognizer.data.iam import IAM
 
 
-def test_iam_parsed_words():
-    iam = IAM()
-    iam.prepare_data()
-    for iam_id in iam.all_ids:
-        assert len(iam.word_strings_by_id[iam_id]) == len(iam.word_regions_by_id[iam_id])
-
-
 def test_iam_parsed_lines():
     iam = IAM()
     iam.prepare_data()
