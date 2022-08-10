@@ -1,5 +1,4 @@
-"""Class for loading the IAM dataset, which encompasses both paragraphs and lines, with associated utilities."""
-import os
+"""Class for loading the IAM handwritten text dataset, which encompasses both paragraphs and lines, plus utilities."""
 from pathlib import Path
 from typing import Any, cast, Dict, List, Optional
 import zipfile
@@ -21,13 +20,17 @@ EXTRACTED_DATASET_DIRNAME = metadata.EXTRACTED_DATASET_DIRNAME
 
 
 class IAM:
-    """
+    """A dataset of images of handwritten text written on a form underneath a typewritten prompt.
+
     "The IAM Lines dataset, first published at the ICDAR 1999, contains forms of unconstrained handwritten text,
-    which were scanned at a resolution of 300dpi and saved as PNG images with 256 gray levels.
+    which were scanned at a resolution of 300dpi and saved as PNG images with 256 gray levels."
     From http://www.fki.inf.unibe.ch/databases/iam-handwriting-database
 
+    Images are identified by their "form ID". These IDs are used to separate train, validation and test splits,
+    as keys for dictonaries returning label and image crop region data, and more.
+
     The data split we will use is
-    IAM lines Large Writer Independent Text Line Recognition Task (lwitlrt): 9,862 text lines.
+    IAM lines Large Writer Independent Text Line Recognition Task (LWITLRT): 9,862 text lines.
         The validation set has been merged into the train set.
         The train set has 7,101 lines from 326 writers.
         The test set has 1,861 lines from 128 writers.
@@ -37,90 +40,11 @@ class IAM:
     def __init__(self):
         self.metadata = toml.load(METADATA_FILENAME)
 
-    def prepare_data(self) -> None:
+    def prepare_data(self):
         if self.xml_filenames:
             return
         filename = _download_raw_dataset(self.metadata, DL_DATA_DIRNAME)  # type: ignore
         _extract_raw_dataset(filename, DL_DATA_DIRNAME)
-
-    @property
-    def xml_filenames(self) -> List[Path]:
-        return list((EXTRACTED_DATASET_DIRNAME / "xml").glob("*.xml"))
-
-    @property
-    def form_filenames(self) -> List[Path]:
-        return list((EXTRACTED_DATASET_DIRNAME / "forms").glob("*.jpg"))
-
-    @property
-    def xml_filenames_by_id(self):
-        return {filename.stem: filename for filename in self.xml_filenames}
-
-    @property
-    def form_filenames_by_id(self):
-        return {filename.stem: filename for filename in self.form_filenames}
-
-    @cachedproperty
-    def all_ids(self):
-        """Return a list of all ids."""
-        return sorted([f.stem for f in self.xml_filenames])
-
-    @cachedproperty
-    def test_ids(self):
-        """Return a list of IAM lines Large Writer Independent Text Line Recognition Task test ids."""
-        return _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/testset.txt")
-
-    @cachedproperty
-    def validation_ids(self):
-        """
-        Return a list of IAM lines Large Writer Independent Text Line Recognition Task validation (set 1 and set 2) ids.
-        """
-        val_ids = _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/validationset1.txt")
-        val_ids.extend(_get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/validationset2.txt"))
-        return val_ids
-
-    @cachedproperty
-    def train_ids(self):
-        """Return a list of train ids - all ids which aren't test or validation ids."""
-        return list(set(self.all_ids) - (set(self.test_ids) | set(self.validation_ids)))
-
-    @cachedproperty
-    def split_by_id(self):
-        split_by_id = {id_: "train" for id_ in self.train_ids}
-        split_by_id.update({id_: "val" for id_ in self.validation_ids})
-        split_by_id.update({id_: "test" for id_ in self.test_ids})
-        return split_by_id
-
-    @cachedproperty
-    def ids_by_split(self):
-        return {"train": self.train_ids, "val": self.validation_ids, "test": self.test_ids}
-
-    @cachedproperty
-    def line_strings_by_id(self):
-        """Return a dict from name of IAM form to a list of line texts in it."""
-        return {filename.stem: _get_line_strings_from_xml_file(filename) for filename in self.xml_filenames}
-
-    @cachedproperty
-    def line_regions_by_id(self):
-        """Return a dict from name of IAM form to a list of (x1, x2, y1, y2) coordinates of all lines in it."""
-        return {filename.stem: _get_line_regions_from_xml_file(filename) for filename in self.xml_filenames}
-
-    @cachedproperty
-    def paragraph_string_by_id(self):
-        """Return a dict from name of IAM form to a list of line texts in it."""
-        return {id: NEW_LINE_TOKEN.join(line_strings) for id, line_strings in self.line_strings_by_id.items()}
-
-    @cachedproperty
-    def paragraph_region_by_id(self):
-        """Return a dict from name of IAM form to a list of (x1, x2, y1, y2) coordinates of all lines in it."""
-        return {
-            id: {
-                "x1": min(region["x1"] for region in line_regions),
-                "y1": min(region["y1"] for region in line_regions),
-                "x2": max(region["x2"] for region in line_regions),
-                "y2": max(region["y2"] for region in line_regions),
-            }
-            for id, line_regions in self.line_regions_by_id.items()
-        }
 
     def load_image(self, id: str) -> Image.Image:
         """Load and return an image of an entire IAM form.
@@ -139,14 +63,94 @@ class IAM:
         """Print info about the dataset."""
         return "IAM Dataset\n" f"Num total: {len(self.xml_filenames)}\nNum test: {len(self.metadata['test_ids'])}\n"
 
+    @cachedproperty
+    def all_ids(self):
+        """A list of all form IDs."""
+        return sorted([f.stem for f in self.xml_filenames])
+
+    @cachedproperty
+    def ids_by_split(self):
+        return {"train": self.train_ids, "val": self.validation_ids, "test": self.test_ids}
+
+    @cachedproperty
+    def split_by_id(self):
+        """A dictionary mapping form IDs to their split according to IAM Lines LWITLRT."""
+        split_by_id = {id_: "train" for id_ in self.train_ids}
+        split_by_id.update({id_: "val" for id_ in self.validation_ids})
+        split_by_id.update({id_: "test" for id_ in self.test_ids})
+        return split_by_id
+
+    @cachedproperty
+    def train_ids(self):
+        """A list of form IDs which are in the IAM Lines LWITLRT training set."""
+        return list(set(self.all_ids) - (set(self.test_ids) | set(self.validation_ids)))
+
+    @cachedproperty
+    def test_ids(self):
+        """A list of form IDs from the IAM Lines LWITLRT test set."""
+        return _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/testset.txt")
+
+    @property
+    def xml_filenames(self) -> List[Path]:
+        """The filenames of all .xml files, which contain label information."""
+        return list((EXTRACTED_DATASET_DIRNAME / "xml").glob("*.xml"))
+
+    @cachedproperty
+    def validation_ids(self):
+        """A list of form IDs from IAM Lines LWITLRT validation sets 1 and 2."""
+        val_ids = _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/validationset1.txt")
+        val_ids.extend(_get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/validationset2.txt"))
+        return val_ids
+
+    @property
+    def form_filenames(self) -> List[Path]:
+        """The filenames of all .jpg files, which contain images of IAM forms."""
+        return list((EXTRACTED_DATASET_DIRNAME / "forms").glob("*.jpg"))
+
+    @property
+    def xml_filenames_by_id(self):
+        """A dictionary mapping form IDs to their XML label information files."""
+        return {filename.stem: filename for filename in self.xml_filenames}
+
+    @property
+    def form_filenames_by_id(self):
+        """A dictionary mapping form IDs to their JPEG images."""
+        return {filename.stem: filename for filename in self.form_filenames}
+
+    @cachedproperty
+    def line_strings_by_id(self):
+        """Returns a dict mapping an IAM form id to its list of line texts."""
+        return {filename.stem: _get_line_strings_from_xml_file(filename) for filename in self.xml_filenames}
+
+    @cachedproperty
+    def line_regions_by_id(self):
+        """Returns a dict mapping an IAM form id to its list of line image crop regions."""
+        return {filename.stem: _get_line_regions_from_xml_file(filename) for filename in self.xml_filenames}
+
+    @cachedproperty
+    def paragraph_string_by_id(self):
+        """Returns a dict mapping an IAM form id to its paragraph text."""
+        return {id: NEW_LINE_TOKEN.join(line_strings) for id, line_strings in self.line_strings_by_id.items()}
+
+    @cachedproperty
+    def paragraph_region_by_id(self):
+        """Return a dict mapping an IAM form id to its paragraph image crop region."""
+        return {
+            id: {
+                "x1": min(region["x1"] for region in line_regions),
+                "y1": min(region["y1"] for region in line_regions),
+                "x2": max(region["x2"] for region in line_regions),
+                "y2": max(region["y2"] for region in line_regions),
+            }
+            for id, line_regions in self.line_regions_by_id.items()
+        }
+
 
 def _extract_raw_dataset(filename: Path, dirname: Path) -> None:
     print("Extracting IAM data")
-    curdir = os.getcwd()
-    os.chdir(dirname)
-    with zipfile.ZipFile(filename, "r") as zip_file:
-        zip_file.extractall()
-    os.chdir(curdir)
+    with util.temporary_working_directory(dirname):
+        with zipfile.ZipFile(filename, "r") as zip_file:
+            zip_file.extractall()
 
 
 def _get_ids_from_lwitlrt_split_file(filename: str) -> List[str]:
