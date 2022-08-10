@@ -71,12 +71,9 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         rank_zero_info(f"IAMSyntheticParagraphs.setup({stage}): Loading trainval IAM paragraph regions and lines...")
 
         if stage == "fit" or stage is None:
-            self._load_train_dataset()
-
-    def _load_train_dataset(self):
-        X, para_labels = generate_synthetic_paragraphs(line_crops=self.line_crops, line_labels=self.line_labels)
-        Y = convert_strings_to_labels(strings=para_labels, mapping=self.inverse_mapping, length=self.output_dims[0])
-        self.data_train = BaseDataset(X, Y, transform=self.trainval_transform)
+            X, para_labels = generate_synthetic_paragraphs(line_crops=self.line_crops, line_labels=self.line_labels)
+            Y = convert_strings_to_labels(strings=para_labels, mapping=self.inverse_mapping, length=self.output_dims[0])
+            self.data_train = BaseDataset(X, Y, transform=self.trainval_transform)
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
