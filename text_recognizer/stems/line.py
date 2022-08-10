@@ -68,8 +68,8 @@ class IAMLineStem(ImageStem):
             random_affine_kwargs = {
                 "degrees": 1,
                 "shear": (-30, 20),
-                "resample": Image.BILINEAR,
-                "fillcolor": 0,
+                "interpolation": transforms.InterpolationMode.BILINEAR,
+                "fill": 0,
             }
 
         pil_transforms_list = [transforms.Lambda(embed_crop)]

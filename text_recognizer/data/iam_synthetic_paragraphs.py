@@ -14,11 +14,10 @@ from text_recognizer.data.iam_lines import (
 )
 from text_recognizer.data.iam_paragraphs import IAMParagraphs
 from text_recognizer.data.paragraph_synthesis import generate_synthetic_paragraphs
-from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
+from text_recognizer.data.util import BaseDataset, convert_strings_to_labels
 import text_recognizer.metadata.iam_synthetic_paragraphs as metadata
 
 
-IMAGE_SCALE_FACTOR = metadata.IMAGE_SCALE_FACTOR
 PROCESSED_DATA_DIRNAME = metadata.PROCESSED_DATA_DIRNAME
 
 
@@ -27,8 +26,6 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
     def __init__(self, args: argparse.Namespace = None):
         super().__init__(args)
-        self.trainval_transform.scale_factor = 1  # we perform rescaling ahead of time, in prepare_data
-        self.transform.scale_factor = 1
 
     def prepare_data(self, *args, **kwargs) -> None:
         """
@@ -47,8 +44,6 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         for split in ["train"]:  # synthetic dataset is only used in training phase
             rank_zero_info(f"Cropping IAM line regions and loading labels for {split} data split...")
             crops, labels = generate_line_crops_and_labels(iam, split)
-
-            crops = [resize_image(crop, IMAGE_SCALE_FACTOR) for crop in crops]
             save_images_and_labels(crops, labels, split, PROCESSED_DATA_DIRNAME)
 
     def setup(self, stage: str = None):

@@ -1,12 +1,10 @@
 """IAMParagraphs Stem class."""
-from PIL import Image
 import torchvision.transforms as transforms
 
 import text_recognizer.metadata.iam_paragraphs as metadata
 from text_recognizer.stems.image import ImageStem
 
 
-IMAGE_SCALE_FACTOR = metadata.IMAGE_SCALE_FACTOR
 IMAGE_HEIGHT, IMAGE_WIDTH = metadata.IMAGE_HEIGHT, metadata.IMAGE_WIDTH
 IMAGE_SHAPE = metadata.IMAGE_SHAPE
 
@@ -15,8 +13,6 @@ MAX_LABEL_LENGTH = metadata.MAX_LABEL_LENGTH
 
 class ParagraphStem(ImageStem):
     """A stem for handling images that contain a paragraph of text."""
-
-    scale_factor = IMAGE_SCALE_FACTOR
 
     def __init__(
         self,
@@ -65,14 +61,3 @@ class ParagraphStem(ImageStem):
                     transforms.RandomAdjustSharpness(**sharpness_kwargs),
                 ]
             )
-
-    def __call__(self, img):
-        img = self.resize(img)
-        return super().__call__(img)
-
-    def resize(self, img):
-        if self.scale_factor == 1:
-            return img
-        else:
-            out_shape = (img.width // self.scale_factor, img.height // self.scale_factor)
-            return img.resize(out_shape, resample=Image.BILINEAR)

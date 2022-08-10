@@ -10,7 +10,7 @@ from PIL import Image, ImageFile
 from text_recognizer import util
 from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
 from text_recognizer.data.iam import IAM
-from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, split_dataset
+from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
 import text_recognizer.metadata.iam_lines as metadata
 from text_recognizer.stems.line import IAMLineStem
 
@@ -18,7 +18,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 PROCESSED_DATA_DIRNAME = metadata.PROCESSED_DATA_DIRNAME
 
-TRAIN_FRAC = 0.8
+IMAGE_SCALE_FACTOR = metadata.IMAGE_SCALE_FACTOR
 
 
 class IAMLines(BaseDataModule):
@@ -47,14 +47,16 @@ class IAMLines(BaseDataModule):
         print("Cropping IAM line regions...")
         iam = IAM()
         iam.prepare_data()
-        crops_trainval, labels_trainval = generate_line_crops_and_labels(iam, "trainval")
+        crops_train, labels_train = generate_line_crops_and_labels(iam, "train")
+        crops_val, labels_val = generate_line_crops_and_labels(iam, "val")
         crops_test, labels_test = generate_line_crops_and_labels(iam, "test")
 
-        shapes = np.array([crop.size for crop in crops_trainval + crops_test])
+        shapes = np.array([crop.size for crop in crops_train + crops_val + crops_test])
         aspect_ratios = shapes[:, 0] / shapes[:, 1]
 
         print("Saving images, labels, and statistics...")
-        save_images_and_labels(crops_trainval, labels_trainval, "trainval", PROCESSED_DATA_DIRNAME)
+        save_images_and_labels(crops_train, labels_train, "train", PROCESSED_DATA_DIRNAME)
+        save_images_and_labels(crops_val, labels_val, "val", PROCESSED_DATA_DIRNAME)
         save_images_and_labels(crops_test, labels_test, "test", PROCESSED_DATA_DIRNAME)
         with open(PROCESSED_DATA_DIRNAME / "_max_aspect_ratio.txt", "w") as file:
             file.write(str(aspect_ratios.max()))
@@ -66,29 +68,25 @@ class IAMLines(BaseDataModule):
             assert image_width <= metadata.IMAGE_WIDTH
 
         if stage == "fit" or stage is None:
-            x_trainval, labels_trainval = load_processed_crops_and_labels("trainval", PROCESSED_DATA_DIRNAME)
-            assert self.output_dims[0] >= max([len(_) for _ in labels_trainval]) + 2  # Add 2 for start/end tokens.
+            x_train, labels_train = load_processed_crops_and_labels("train", PROCESSED_DATA_DIRNAME)
+            y_train = convert_strings_to_labels(labels_train, self.inverse_mapping, length=self.output_dims[0])
+            self.data_train = BaseDataset(x_train, y_train, transform=self.trainval_transform)
 
-            y_trainval = convert_strings_to_labels(labels_trainval, self.inverse_mapping, length=self.output_dims[0])
-            data_trainval = BaseDataset(x_trainval, y_trainval, transform=self.trainval_transform)
+            x_val, labels_val = load_processed_crops_and_labels("val", PROCESSED_DATA_DIRNAME)
+            y_val = convert_strings_to_labels(labels_val, self.inverse_mapping, length=self.output_dims[0])
+            self.data_val = BaseDataset(x_val, y_val, transform=self.trainval_transform)
 
-            self.data_train, self.data_val = split_dataset(base_dataset=data_trainval, fraction=TRAIN_FRAC, seed=42)
+            # quick check: do we have the right sequence lengths?
+            assert self.output_dims[0] >= max([len(_) for _ in labels_train]) + 2  # Add 2 for start/end tokens.
+            assert self.output_dims[0] >= max([len(_) for _ in labels_val]) + 2  # Add 2 for start/end tokens.
 
         if stage == "test" or stage is None:
             x_test, labels_test = load_processed_crops_and_labels("test", PROCESSED_DATA_DIRNAME)
-            assert self.output_dims[0] >= max([len(_) for _ in labels_test]) + 2
 
             y_test = convert_strings_to_labels(labels_test, self.inverse_mapping, length=self.output_dims[0])
             self.data_test = BaseDataset(x_test, y_test, transform=self.transform)
 
-        if stage is None:
-            self._verify_output_dims(labels_trainval=labels_trainval, labels_test=labels_test)
-
-    def _verify_output_dims(self, labels_trainval, labels_test):
-        max_label_length = max([len(label) for label in labels_trainval + labels_test]) + 2
-        output_dims = (max_label_length, 1)
-        if output_dims != self.output_dims:
-            raise RuntimeError(output_dims, self.output_dims)
+            assert self.output_dims[0] >= max([len(_) for _ in labels_test]) + 2
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
@@ -113,8 +111,8 @@ class IAMLines(BaseDataModule):
         return basic + data
 
 
-def generate_line_crops_and_labels(iam: IAM, split: str):
-    """Load both cropped lines and associated labels from IAM."""
+def generate_line_crops_and_labels(iam: IAM, split: str, scale_factor=IMAGE_SCALE_FACTOR):
+    """Create both cropped lines and associated labels from IAM, with resizing by default"""
     crops, labels = [], []
     for iam_id in iam.ids_by_split[split]:
         labels += iam.line_strings_by_id[iam_id]
@@ -122,7 +120,9 @@ def generate_line_crops_and_labels(iam: IAM, split: str):
         image = iam.load_image(iam_id)
         for line in iam.line_regions_by_id[iam_id]:
             coords = [line[point] for point in ["x1", "y1", "x2", "y2"]]
-            crops.append(image.crop(coords))
+            crop = image.crop(coords)
+            crop = resize_image(crop, scale_factor=scale_factor)
+            crops.append(crop)
 
     assert len(crops) == len(labels)
     return crops, labels
