@@ -61,7 +61,14 @@ class IAM:
 
     def __repr__(self):
         """Print info about the dataset."""
-        return "IAM Dataset\n" f"Num total: {len(self.xml_filenames)}\nNum test: {len(self.metadata['test_ids'])}\n"
+        info = ["IAM Dataset"]
+        info.append(f"Total Images: {len(self.xml_filenames)}")
+        info.append(f"Total Test Images: {len(self.test_ids)}")
+        info.append(f"Total Paragraphs: {len(self.paragraph_string_by_id)}")
+        num_lines = sum(len(line_regions) for line_regions in self.line_regions_by_id.items())
+        info.append(f"Total Lines: {num_lines}")
+
+        return "\n\t".join(info)
 
     @cachedproperty
     def all_ids(self):
