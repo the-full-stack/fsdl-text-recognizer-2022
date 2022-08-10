@@ -3,6 +3,7 @@ from text_recognizer.data.iam import IAM
 
 
 def test_iam_parsed_lines():
+    """Tests that we retrieve the same number of line labels and line image cropregions."""
     iam = IAM()
     iam.prepare_data()
     for iam_id in iam.all_ids:
@@ -10,6 +11,7 @@ def test_iam_parsed_lines():
 
 
 def test_iam_data_splits():
+    """Fails when any identifiers are shared between training, test, or validation."""
     iam = IAM()
     iam.prepare_data()
     assert not set(iam.train_ids) & set(iam.validation_ids)
