@@ -97,7 +97,7 @@ class IAM:
         """A list of form IDs from the IAM Lines LWITLRT test set."""
         return _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/testset.txt")
 
-    @cachedproperty
+    @property
     def xml_filenames(self) -> List[Path]:
         """The filenames of all .xml files, which contain label information."""
         return list((EXTRACTED_DATASET_DIRNAME / "xml").glob("*.xml"))
@@ -109,39 +109,39 @@ class IAM:
         val_ids.extend(_get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/validationset2.txt"))
         return val_ids
 
-    @cachedproperty
+    @property
     def form_filenames(self) -> List[Path]:
         """The filenames of all .jpg files, which contain images of IAM forms."""
         return list((EXTRACTED_DATASET_DIRNAME / "forms").glob("*.jpg"))
 
-    @cachedproperty
+    @property
     def xml_filenames_by_id(self):
         """A dictionary mapping form IDs to their XML label information files."""
         return {filename.stem: filename for filename in self.xml_filenames}
 
-    @cachedproperty
+    @property
     def form_filenames_by_id(self):
         """A dictionary mapping form IDs to their JPEG images."""
         return {filename.stem: filename for filename in self.form_filenames}
 
     @cachedproperty
     def line_strings_by_id(self):
-        """A dict mapping an IAM form id to its list of line texts."""
+        """Returns a dict mapping an IAM form id to its list of line texts."""
         return {filename.stem: _get_line_strings_from_xml_file(filename) for filename in self.xml_filenames}
 
     @cachedproperty
     def line_regions_by_id(self):
-        """A dict mapping an IAM form id to its list of line image crop regions."""
+        """Returns a dict mapping an IAM form id to its list of line image crop regions."""
         return {filename.stem: _get_line_regions_from_xml_file(filename) for filename in self.xml_filenames}
 
     @cachedproperty
     def paragraph_string_by_id(self):
-        """A dict mapping an IAM form id to its paragraph text."""
+        """Returns a dict mapping an IAM form id to its paragraph text."""
         return {id: NEW_LINE_TOKEN.join(line_strings) for id, line_strings in self.line_strings_by_id.items()}
 
     @cachedproperty
     def paragraph_region_by_id(self):
-        """A dict mapping an IAM form id to its paragraph image crop region."""
+        """Return a dict mapping an IAM form id to its paragraph image crop region."""
         return {
             id: {
                 "x1": min(region["x1"] for region in line_regions),
