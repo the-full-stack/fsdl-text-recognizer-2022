@@ -43,7 +43,7 @@ class IAMParagraphs(BaseDataModule):
         return parser
 
     def prepare_data(self, *args, **kwargs) -> None:
-        if PROCESSED_DATA_DIRNAME.exists():
+        if (PROCESSED_DATA_DIRNAME / "_properties.json").exists():
             return
         rank_zero_info(
             "IAMParagraphs.prepare_data: Cropping IAM paragraph regions and saving them along with labels..."
