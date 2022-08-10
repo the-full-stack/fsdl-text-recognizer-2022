@@ -1,13 +1,13 @@
 """IAM Synthetic Paragraphs Dataset class."""
 import argparse
 import random
-from typing import Any, Callable, List, Sequence, Tuple
+from typing import Any, Callable, cast, List, Optional, Sequence, Tuple
 
 # from boltons.cacheutils import cachedproperty
 import numpy as np
 from PIL import Image
-import torch
 from pytorch_lightning.utilities.rank_zero import rank_zero_info
+import torch
 
 from text_recognizer.data.base_data_module import load_and_print_info
 from text_recognizer.data.iam import IAM
@@ -17,11 +17,8 @@ from text_recognizer.data.iam_lines import (
     load_line_labels,
     save_images_and_labels,
 )
-from text_recognizer.data.iam_paragraphs import (
-    get_dataset_properties,
-    IAMParagraphs,
-)
-from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
+from text_recognizer.data.iam_paragraphs import IAMParagraphs
+from text_recognizer.data.util import convert_strings_to_labels, resize_image
 import text_recognizer.metadata.iam_synthetic_paragraphs as metadata
 
 
@@ -36,8 +33,8 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
     def __init__(self, args: argparse.Namespace = None):
         super().__init__(args)
-        self.line_crops = None
-        self.line_labels = None
+        self.line_crops: Optional[List[Image.Image]] = None
+        self.line_labels: Optional[List[str]] = None
         self.trainval_transform.scale_factor = 1  # we perform rescaling ahead of time, in prepare_data
         self.transform.scale_factor = 1
 
@@ -68,11 +65,12 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         if stage == "fit" or stage is None:
             self._load_crops_and_labels()
             self.data_train = IAMSyntheticParagraphsDataset(
-                line_crops=self.line_crops,
-                line_labels=self.line_labels,
-                dataset_len=64*8*20,    #self.batch_size * max(self.num_gpus, 1) * 10,
+                line_crops=cast(List[Image.Image], self.line_crops),
+                line_labels=cast(List[str], self.line_labels),
+                dataset_len=64 * 8 * 40,  # self.batch_size * max(self.num_gpus, 1) * 40,
                 inverse_mapping=self.inverse_mapping,
-                target_length=self.output_dims[0],
+                input_dims=self.input_dims,
+                output_dims=self.output_dims,
                 transform=self.trainval_transform,
             )
 
@@ -117,7 +115,16 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
         function that takes a target and returns the same
     """
 
-    def __init__(self, line_crops: List[Image.Image], line_labels: List[str], dataset_len: int, inverse_mapping: dict, target_length: int, transform: Callable = None) -> None:
+    def __init__(
+        self,
+        line_crops: List[Image.Image],
+        line_labels: List[str],
+        dataset_len: int,
+        inverse_mapping: dict,
+        input_dims: Tuple[int, ...],
+        output_dims: Tuple[int, ...],
+        transform: Callable = None,
+    ) -> None:
         super().__init__()
         self.line_crops = line_crops
         self.line_labels = line_labels
@@ -126,9 +133,10 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
         self.ids = list(range(len(self.line_labels)))
         self.dataset_len = dataset_len
         self.inverse_mapping = inverse_mapping
-        self.target_length = target_length
+        self.input_dims = input_dims
+        self.output_dims = output_dims
         self.transform = transform
-        self.min_num_lines, self.max_num_lines = 1, 12
+        self.min_num_lines, self.max_num_lines = 1, 15
 
         self.seed_set = False
         # self._set_seed()
@@ -140,7 +148,8 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
         return self.dataset_len
 
     # def _set_seed(self):
-    # Issue is if num_workers < num_gpus, the same worker calls __get_item__() on multiple GPUs, thereby setting the same seed.
+    # Issue is if num_workers < num_gpus, the same worker calls __get_item__() on multiple GPUs,
+    # thereby setting the same seed.
     #     if not self.seed_set:
     #         # each worker will have its PyTorch seed set to base_seed + worker_id
     #         worker_info = torch.utils.data.get_worker_info()
@@ -158,26 +167,29 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         """Return a datum and its target, after processing by transforms."""
-        self._set_seed(index)  # Since shuffle is True for train dataloaders, the first index will be different on different GPUs
+        # Since shuffle is True for train dataloaders, the first index will be different on different GPUs
+        self._set_seed(index)
         num_lines = random.randint(self.min_num_lines, self.max_num_lines)
         indices = random.sample(self.ids, k=num_lines)
         # print(f"IAMSyntheticParagraphsDataset.__getitem__({index}):indices: {indices}")
 
-        datum = join_line_crops_to_form_paragraph([self.line_crops[i] for i in indices])
+        while True:
+            datum = join_line_crops_to_form_paragraph([self.line_crops[i] for i in indices])
+            labels = NEW_LINE_TOKEN.join([self.line_labels[i] for i in indices])
 
-        labels = NEW_LINE_TOKEN.join([self.line_labels[i] for i in indices])
-        target = convert_strings_to_labels(strings=[labels], mapping=self.inverse_mapping, length=self.target_length)[0]
-
-        # if len(target) > paragraph_properties["label_length"]["max"]:
-        #     print("Label longer than longest label in original IAM Paragraphs dataset - hence dropping")
-        #     continue
-        # max_para_shape = paragraph_properties["crop_shape"]["max"]
-        # if datum.height > max_para_shape[0] or datum.width > max_para_shape[1]:
-        #     print("Crop larger than largest crop in original IAM Paragraphs dataset - hence dropping")
-        #     continue
+            if (
+                (len(labels) <= self.output_dims[0] - 2)
+                and (datum.height <= self.input_dims[1])
+                and (datum.width <= self.input_dims[2])
+            ):
+                break
+            indices = indices[:-1]
 
         if self.transform is not None:
             datum = self.transform(datum)
+
+        length = self.output_dims[0]
+        target = convert_strings_to_labels(strings=[labels], mapping=self.inverse_mapping, length=length)[0]
 
         return datum, target
 
