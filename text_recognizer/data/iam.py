@@ -1,16 +1,18 @@
 """Class for loading the IAM dataset, which encompasses both paragraphs and lines, with associated utilities."""
-import argparse
 import os
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, cast, Dict, List, Optional
 import zipfile
 
 from boltons.cacheutils import cachedproperty
 from defusedxml import ElementTree
+from PIL import Image, ImageOps
 import toml
 
-from text_recognizer.data.base_data_module import _download_raw_dataset, BaseDataModule, load_and_print_info
+from text_recognizer import util
+from text_recognizer.data.base_data_module import _download_raw_dataset, load_and_print_info
 import text_recognizer.metadata.iam as metadata
+from text_recognizer.metadata.iam_paragraphs import NEW_LINE_TOKEN
 
 
 METADATA_FILENAME = metadata.METADATA_FILENAME
@@ -18,7 +20,7 @@ DL_DATA_DIRNAME = metadata.DL_DATA_DIRNAME
 EXTRACTED_DATASET_DIRNAME = metadata.EXTRACTED_DATASET_DIRNAME
 
 
-class IAM(BaseDataModule):
+class IAM:
     """
     "The IAM Lines dataset, first published at the ICDAR 1999, contains forms of unconstrained handwritten text,
     which were scanned at a resolution of 300dpi and saved as PNG images with 256 gray levels.
@@ -32,11 +34,10 @@ class IAM(BaseDataModule):
         The text lines of all data sets are mutually exclusive, thus each writer has contributed to one set only.
     """
 
-    def __init__(self, args: argparse.Namespace = None):
-        super().__init__(args)
+    def __init__(self):
         self.metadata = toml.load(METADATA_FILENAME)
 
-    def prepare_data(self, *args, **kwargs) -> None:
+    def prepare_data(self) -> None:
         if self.xml_filenames:
             return
         filename = _download_raw_dataset(self.metadata, DL_DATA_DIRNAME)  # type: ignore
@@ -49,6 +50,10 @@ class IAM(BaseDataModule):
     @property
     def form_filenames(self) -> List[Path]:
         return list((EXTRACTED_DATASET_DIRNAME / "forms").glob("*.jpg"))
+
+    @property
+    def xml_filenames_by_id(self):
+        return {filename.stem: filename for filename in self.xml_filenames}
 
     @property
     def form_filenames_by_id(self):
@@ -66,7 +71,9 @@ class IAM(BaseDataModule):
 
     @cachedproperty
     def validation_ids(self):
-        """Return a list of IAM lines Large Writer Independent Text Line Recognition Task validation (set 1 and set 2) ids."""
+        """
+        Return a list of IAM lines Large Writer Independent Text Line Recognition Task validation (set 1 and set 2) ids.
+        """
         val_ids = _get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/validationset1.txt")
         val_ids.extend(_get_ids_from_lwitlrt_split_file(EXTRACTED_DATASET_DIRNAME / "task/validationset2.txt"))
         return val_ids
@@ -84,6 +91,20 @@ class IAM(BaseDataModule):
         return split_by_id
 
     @cachedproperty
+    def ids_by_split(self):
+        return {"train": self.train_ids, "val": self.validation_ids, "test": self.test_ids}
+
+    @cachedproperty
+    def word_strings_by_id(self):
+        """Return a dict from name of IAM form to a list of line texts in it."""
+        return {filename.stem: _get_word_strings_from_xml_file(filename) for filename in self.xml_filenames}
+
+    @cachedproperty
+    def word_regions_by_id(self):
+        """Return a dict from name of IAM form to a list of (x1, x2, y1, y2) coordinates of all lines in it."""
+        return {filename.stem: _get_word_regions_from_xml_file(filename) for filename in self.xml_filenames}
+
+    @cachedproperty
     def line_strings_by_id(self):
         """Return a dict from name of IAM form to a list of line texts in it."""
         return {filename.stem: _get_line_strings_from_xml_file(filename) for filename in self.xml_filenames}
@@ -92,6 +113,34 @@ class IAM(BaseDataModule):
     def line_regions_by_id(self):
         """Return a dict from name of IAM form to a list of (x1, x2, y1, y2) coordinates of all lines in it."""
         return {filename.stem: _get_line_regions_from_xml_file(filename) for filename in self.xml_filenames}
+
+    @cachedproperty
+    def paragraph_string_by_id(self):
+        """Return a dict from name of IAM form to a list of line texts in it."""
+        return {id: NEW_LINE_TOKEN.join(line_strings) for id, line_strings in self.line_strings_by_id.items()}
+
+    @cachedproperty
+    def paragraph_region_by_id(self):
+        """Return a dict from name of IAM form to a list of (x1, x2, y1, y2) coordinates of all lines in it."""
+        return {
+            id: {
+                "x1": min(region["x1"] for region in line_regions),
+                "y1": min(region["y1"] for region in line_regions),
+                "x2": max(region["x2"] for region in line_regions),
+                "y2": max(region["y2"] for region in line_regions),
+            }
+            for id, line_regions in self.line_regions_by_id.items()
+        }
+
+    def load_image(self, id: str) -> Image.Image:
+        """
+        Load and return the whole IAM image. The image will be a grayscale with white text in black background.
+        Don't confuse this image with IAMParagraphs image as this image will have the printed text on top of the
+        handwritten text too. Load this image and crop out IAMLines and IAMParagraphs from it.
+        """
+        image = util.read_image_pil(self.form_filenames_by_id[id], grayscale=True)
+        image = ImageOps.invert(image)
+        return image
 
     def __repr__(self):
         """Print info about the dataset."""
@@ -118,35 +167,119 @@ def _get_ids_from_lwitlrt_split_file(filename: str) -> List[str]:
 
 def _get_line_strings_from_xml_file(filename: str) -> List[str]:
     """Get the text content of each line. Note that we replace &quot; with "."""
+    xml_line_elements = _get_line_elements_from_xml_file(filename)
+    return [_get_text_from_xml_element(el) for el in xml_line_elements]
+
+
+def _get_word_strings_from_xml_file(filename: str) -> List[str]:
+    """Get the text content of each line. Note that we replace &quot; with "."""
     xml_root_element = ElementTree.parse(filename).getroot()  # nosec
-    xml_line_elements = xml_root_element.findall("handwritten-part/line")
-    return [el.attrib["text"].replace("&quot;", '"') for el in xml_line_elements]
+    xml_word_elements = xml_root_element.findall("handwritten-part/line/word")
+    return [_get_text_from_xml_element(el) for el in xml_word_elements if el.findall("cmp")]
+
+
+def _get_text_from_xml_element(xml_element: Any) -> str:
+    """Extract text from any XML element."""
+    return xml_element.attrib["text"].replace("&quot;", '"')
 
 
 def _get_line_regions_from_xml_file(filename: str) -> List[Dict[str, int]]:
     """Get the line region dict for each line."""
+    xml_line_elements = _get_line_elements_from_xml_file(filename)
+    line_regions = [
+        cast(Dict[str, int], _get_region_from_xml_element(xml_elem=el, xml_path="word/cmp")) for el in xml_line_elements
+    ]
+    assert any(region is not None for region in line_regions), "Line regions cannot be None"
+
+    # next_line_region["y1"] - prev_line_region["y2"] can be negative due to overlapping characters
+    line_gaps_y = [
+        max(next_line_region["y1"] - prev_line_region["y2"], 0)
+        for next_line_region, prev_line_region in zip(line_regions[1:], line_regions[:-1])
+    ]
+    post_line_gaps_y = line_gaps_y + [2 * metadata.LINE_REGION_PADDING_Y]
+    pre_line_gaps_y = [2 * metadata.LINE_REGION_PADDING_Y] + line_gaps_y
+
+    return [
+        {
+            "x1": region["x1"] - metadata.LINE_REGION_PADDING_X,
+            "x2": region["x2"] + metadata.LINE_REGION_PADDING_X,
+            "y1": region["y1"] - min(metadata.LINE_REGION_PADDING_Y, pre_line_gaps_y[i] // 2),
+            "y2": region["y2"] + min(metadata.LINE_REGION_PADDING_Y, post_line_gaps_y[i] // 2),
+        }
+        for i, region in enumerate(line_regions)
+    ]
+
+
+def _get_line_elements_from_xml_file(filename: str) -> List[Any]:
+    """Get all line xml elements from xml file."""
     xml_root_element = ElementTree.parse(filename).getroot()  # nosec
-    xml_line_elements = xml_root_element.findall("handwritten-part/line")
-    return [_get_line_region_from_xml_element(el) for el in xml_line_elements]
+    return xml_root_element.findall("handwritten-part/line")
 
 
-def _get_line_region_from_xml_element(xml_line) -> Dict[str, int]:
+def _get_word_regions_from_xml_file(filename: str) -> List[Dict[str, int]]:
+    """Get the line region dict for each line."""
+    xml_line_elements = _get_line_elements_from_xml_file(filename)
+    word_regions = []
+    for el in xml_line_elements:
+        word_regions += _get_word_regions_from_xml_element(el)
+    return word_regions
+
+
+def _get_word_regions_from_xml_element(line_xml_elem: Any) -> List[Dict[str, int]]:
+    """Get regions of words in a line from line xml element."""
+    word_xml_elems = line_xml_elem.findall("word")
+    all_word_regions = [_get_region_from_xml_element(xml_elem=el, xml_path="cmp") for el in word_xml_elems]
+    all_word_strings = [_get_text_from_xml_element(el) for el in word_xml_elems]
+
+    # very few words don't have associated regions
+    word_regions: List[Dict[str, int]] = [rgn for rgn in all_word_regions if rgn is not None]
+    word_strings: List[str] = [string for rgn, string in zip(all_word_regions, all_word_strings) if rgn is not None]
+
+    # This is to ensure characters like ".", "'" maintain their relative position in a line of text
+    line_y1 = min(region["y1"] for region in word_regions)
+    line_y2 = max(region["y2"] for region in word_regions)
+
+    word_gaps_x = [
+        max(next_word_region["x1"] - prev_word_region["x2"], 0)  # can be negative due to overlapping characters
+        for next_word_region, prev_word_region in zip(word_regions[1:], word_regions[:-1])
+    ]
+    post_word_gaps_x = word_gaps_x + [2 * metadata.WORD_REGION_PADDING_X]
+    pre_word_gaps_x = [2 * metadata.WORD_REGION_PADDING_X] + word_gaps_x
+
+    return [
+        {
+            "x1": (region["x1"] - min(metadata.WORD_REGION_PADDING_X, pre_word_gaps_x[i] // 2)),
+            "x2": (region["x2"] + min(metadata.WORD_REGION_PADDING_X, post_word_gaps_x[i] // 2)),
+            "y1": line_y1 if _is_punctuation(word_strings[i]) else region["y1"] - metadata.WORD_REGION_PADDING_Y,
+            "y2": line_y2 if _is_punctuation(word_strings[i]) else region["y2"] + metadata.WORD_REGION_PADDING_Y,
+        }
+        for i, region in enumerate(word_regions)
+    ]
+
+
+def _is_punctuation(word: str) -> bool:
+    return len(word) == 1 and word in metadata.PUNCTUATIONS
+
+
+def _get_region_from_xml_element(xml_elem: Any, xml_path: str) -> Optional[Dict[str, int]]:
     """
+    Get region from input xml element. The region is downsampled because the stored images are also downsampled.
+
     Parameters
     ----------
-    xml_line
-        xml element that has x, y, width, and height attributes
+    xml_elem
+        xml element can be a line or word element with x, y, width, and height attributes
+    xml_path
+        should be "word/cmp" if xml_elem is a line element, else "cmp"
     """
-    word_elements = xml_line.findall("word/cmp")
-    x1s = [int(el.attrib["x"]) for el in word_elements]
-    y1s = [int(el.attrib["y"]) for el in word_elements]
-    x2s = [int(el.attrib["x"]) + int(el.attrib["width"]) for el in word_elements]
-    y2s = [int(el.attrib["y"]) + int(el.attrib["height"]) for el in word_elements]
+    unit_elements = xml_elem.findall(xml_path)
+    if not unit_elements:
+        return None
     return {
-        "x1": min(x1s) // metadata.DOWNSAMPLE_FACTOR - metadata.LINE_REGION_PADDING,
-        "y1": min(y1s) // metadata.DOWNSAMPLE_FACTOR - metadata.LINE_REGION_PADDING,
-        "x2": max(x2s) // metadata.DOWNSAMPLE_FACTOR + metadata.LINE_REGION_PADDING,
-        "y2": max(y2s) // metadata.DOWNSAMPLE_FACTOR + metadata.LINE_REGION_PADDING,
+        "x1": min(int(el.attrib["x"]) for el in unit_elements) // metadata.DOWNSAMPLE_FACTOR,
+        "y1": min(int(el.attrib["y"]) for el in unit_elements) // metadata.DOWNSAMPLE_FACTOR,
+        "x2": max(int(el.attrib["x"]) + int(el.attrib["width"]) for el in unit_elements) // metadata.DOWNSAMPLE_FACTOR,
+        "y2": max(int(el.attrib["y"]) + int(el.attrib["height"]) for el in unit_elements) // metadata.DOWNSAMPLE_FACTOR,
     }
 
 

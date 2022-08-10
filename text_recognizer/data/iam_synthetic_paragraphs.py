@@ -3,20 +3,26 @@ import argparse
 import random
 from typing import Any, List, Sequence, Tuple
 
+from boltons.cacheutils import cachedproperty
 import numpy as np
 from PIL import Image
 from pytorch_lightning.utilities.rank_zero import rank_zero_info
 
 from text_recognizer.data.base_data_module import load_and_print_info
 from text_recognizer.data.iam import IAM
-from text_recognizer.data.iam_lines import line_crops_and_labels, load_line_crops_and_labels, save_images_and_labels
+from text_recognizer.data.iam_lines import (
+    line_crops_and_labels,
+    load_line_crops,
+    load_line_labels,
+    save_images_and_labels,
+)
 from text_recognizer.data.iam_paragraphs import (
     get_dataset_properties,
     IAMParagraphs,
 )
 from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
 import text_recognizer.metadata.iam_synthetic_paragraphs as metadata
-from text_recognizer.stems.paragraph import ParagraphStem
+
 
 IMAGE_SCALE_FACTOR = metadata.IMAGE_SCALE_FACTOR
 NEW_LINE_TOKEN = metadata.NEW_LINE_TOKEN
@@ -51,21 +57,26 @@ class IAMSyntheticParagraphs(IAMParagraphs):
             crops, labels = line_crops_and_labels(iam, split)
 
             crops = [resize_image(crop, IMAGE_SCALE_FACTOR) for crop in crops]
-
-            rank_zero_info(f"Saving images and labels at {PROCESSED_DATA_DIRNAME} for {split} data split...")
             save_images_and_labels(crops, labels, split, PROCESSED_DATA_DIRNAME)
+
+    @cachedproperty
+    def line_crops(self):
+        return load_line_crops("train", PROCESSED_DATA_DIRNAME)
+
+    @cachedproperty
+    def line_labels(self):
+        return load_line_labels("train", PROCESSED_DATA_DIRNAME)
 
     def setup(self, stage: str = None) -> None:
         rank_zero_info(f"IAMSyntheticParagraphs.setup({stage}): Loading trainval IAM paragraph regions and lines...")
 
-        def _load_dataset(split: str, transform: ParagraphStem) -> BaseDataset:
-            line_crops, line_labels = load_line_crops_and_labels(split, PROCESSED_DATA_DIRNAME)
-            X, para_labels = generate_synthetic_paragraphs(line_crops=line_crops, line_labels=line_labels)
-            Y = convert_strings_to_labels(strings=para_labels, mapping=self.inverse_mapping, length=self.output_dims[0])
-            return BaseDataset(X, Y, transform=transform)
+        if stage == "fit" or stage is None:
+            self._load_train_dataset()
 
-        if stage in ["fit", "train_only", None]:
-            self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
+    def _load_train_dataset(self):
+        X, para_labels = generate_synthetic_paragraphs(line_crops=self.line_crops, line_labels=self.line_labels)
+        Y = convert_strings_to_labels(strings=para_labels, mapping=self.inverse_mapping, length=self.output_dims[0])
+        self.data_train = BaseDataset(X, Y, transform=self.trainval_transform)
 
     def __repr__(self) -> str:
         """Print info about the dataset."""

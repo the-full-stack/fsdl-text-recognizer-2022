@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Callable, Dict, Optional, Sequence, Tuple
 
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image
 from pytorch_lightning.utilities.rank_zero import rank_zero_info
 
 from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
@@ -18,8 +18,6 @@ from text_recognizer.stems.paragraph import ParagraphStem
 MAX_LABEL_LENGTH = metadata.MAX_LABEL_LENGTH
 NEW_LINE_TOKEN = metadata.NEW_LINE_TOKEN
 PROCESSED_DATA_DIRNAME = metadata.PROCESSED_DATA_DIRNAME
-
-TRAIN_FRAC = 0.8
 
 
 class IAMParagraphs(BaseDataModule):
@@ -84,8 +82,7 @@ class IAMParagraphs(BaseDataModule):
 
         if stage == "fit" or stage is None:
             self.data_train = _load_dataset(split="train", transform=self.trainval_transform)
-            self.data_val = _load_dataset(split="val", transform=self.trainval_transform)
-            self.data_test = _load_dataset(split="test", transform=self.transform)
+            self.data_val = _load_dataset(split="val", transform=self.transform)
 
         if stage == "test" or stage is None:
             self.data_test = _load_dataset(split="test", transform=self.transform)
@@ -130,25 +127,11 @@ def get_paragraph_crops_and_labels(iam: IAM, split: str) -> Tuple[Dict[str, Imag
     """Load IAM paragraph crops and labels for a given split."""
     crops = {}
     labels = {}
-    for form_filename in iam.form_filenames:
-        id_ = form_filename.stem
-        if not iam.split_by_id[id_] == split:
-            continue
-        image = Image.open(form_filename)
-        image = ImageOps.grayscale(image)
-        image = ImageOps.invert(image)
-
-        line_regions = iam.line_regions_by_id[id_]
-        para_bbox = [
-            min([_["x1"] for _ in line_regions]),
-            min([_["y1"] for _ in line_regions]),
-            max([_["x2"] for _ in line_regions]),
-            max([_["y2"] for _ in line_regions]),
-        ]
-        lines = iam.line_strings_by_id[id_]
-
-        crops[id_] = image.crop(para_bbox)
-        labels[id_] = NEW_LINE_TOKEN.join(lines)
+    for iam_id in iam.ids_by_split[split]:
+        image = iam.load_image(iam_id)
+        para_region = iam.paragraph_region_by_id[iam_id]
+        crops[iam_id] = image.crop([para_region[_] for _ in ["x1", "y1", "x2", "y2"]])
+        labels[iam_id] = iam.paragraph_string_by_id[iam_id]
     assert len(crops) == len(labels)
     return crops, labels
 
