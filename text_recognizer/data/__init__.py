@@ -24,6 +24,11 @@ from .iam_paragraphs import IAMParagraphs
 
 # Hide lines above until Lab 03
 
+# Hide lines below until Lab 04
+from .iam_lines import IAMLines
+
+# Hide lines above until Lab 04
+
 # Hide lines below until Lab 05
 from .iam_synthetic_paragraphs import IAMSyntheticParagraphs
 from .iam_original_and_synthetic_paragraphs import IAMOriginalAndSyntheticParagraphs

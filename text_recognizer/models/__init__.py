@@ -11,3 +11,8 @@ from .line_cnn_simple import LineCNNSimple
 from .resnet_transformer import ResnetTransformer
 
 # Hide lines above until Lab 03
+
+# Hide lines below until Lab 04
+from .line_cnn_transformer import LineCNNTransformer
+
+# Hide lines above until Lab 04
