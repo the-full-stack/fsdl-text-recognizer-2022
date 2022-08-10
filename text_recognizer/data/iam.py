@@ -99,7 +99,7 @@ class IAM:
 
     @property
     def xml_filenames(self) -> List[Path]:
-        """The filenames of all .xml files, which contain label information."""
+        """A list of the filenames of all .xml files, which contain label information."""
         return list((EXTRACTED_DATASET_DIRNAME / "xml").glob("*.xml"))
 
     @cachedproperty
@@ -111,7 +111,7 @@ class IAM:
 
     @property
     def form_filenames(self) -> List[Path]:
-        """The filenames of all .jpg files, which contain images of IAM forms."""
+        """A list of the filenames of all .jpg files, which contain images of IAM forms."""
         return list((EXTRACTED_DATASET_DIRNAME / "forms").glob("*.jpg"))
 
     @property
@@ -126,22 +126,22 @@ class IAM:
 
     @cachedproperty
     def line_strings_by_id(self):
-        """Returns a dict mapping an IAM form id to its list of line texts."""
+        """A dict mapping an IAM form id to its list of line texts."""
         return {filename.stem: _get_line_strings_from_xml_file(filename) for filename in self.xml_filenames}
 
     @cachedproperty
     def line_regions_by_id(self):
-        """Returns a dict mapping an IAM form id to its list of line image crop regions."""
+        """A dict mapping an IAM form id to its list of line image crop regions."""
         return {filename.stem: _get_line_regions_from_xml_file(filename) for filename in self.xml_filenames}
 
     @cachedproperty
     def paragraph_string_by_id(self):
-        """Returns a dict mapping an IAM form id to its paragraph text."""
+        """A dict mapping an IAM form id to its paragraph text."""
         return {id: NEW_LINE_TOKEN.join(line_strings) for id, line_strings in self.line_strings_by_id.items()}
 
     @cachedproperty
     def paragraph_region_by_id(self):
-        """Return a dict mapping an IAM form id to its paragraph image crop region."""
+        """A dict mapping an IAM form id to its paragraph image crop region."""
         return {
             id: {
                 "x1": min(region["x1"] for region in line_regions),
