@@ -33,7 +33,6 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         super().__init__(args)
         self.line_crops: Optional[List[Image.Image]] = None
         self.line_labels: Optional[List[str]] = None
-        self.trainval_transform.scale_factor = 1  # we perform rescaling ahead of time, in prepare_data
 
     def prepare_data(self, *args, **kwargs) -> None:
         """
