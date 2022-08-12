@@ -117,9 +117,10 @@ pyparsing==3.0.9
     #   -c requirements/dev.txt
     #   -c requirements/prod.txt
     #   packaging
-pyyaml==5.4.1
+pyyaml==6.0
     # via
     #   -c requirements/dev.txt
+    #   -c requirements/prod.txt
     #   bandit
     #   dparse
 requests==2.27.1

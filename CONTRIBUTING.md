@@ -1,10 +1,38 @@
-# Environment Updates
+# Source Repo and Lab Repo
 
-These notes describe how to reliably update the environment
-for the labs, from system libraries up to Python packages.
+This repo is used to generate the more public-facing
+[labs repo](https://github.com/full-stack-deep-learning/fsdl-text-recognizer-2022-labs).
 
-Users set up their environment by following the instructions in `instructions/setup/readme.md`.
+Changes made here will not be reflected there without intervention.
+Currently, this is a manual process.
+
+# Environment Setup
+
+If you want to set up a development environment for this repo,
+you can follow the same instructions as the students do:
+[`instructions/setup/readme.md`](./instructions/setup/readme.md).
 Any changes that are made to the user-facing process should be documented there, not here.
+
+FYI, we are also experimenting with
+[`devcontainer`s](https://code.visualstudio.com/docs/remote/containers),
+which combine a container backend and a VSCode frontend,
+as a solution for setting up environments.
+GitHub can provide hosting for `devcontainer`s with
+[Codespaces](https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/introduction-to-dev-containers).
+Core contributors can get access to GPU-accelerated Codespaces for development.
+This environment is, as of the 2022 offering of the course,
+not being directly maintained and is not documented in the notes below.
+
+After following those instructions, run
+`pre-commit install` to add pre-commit checks,
+like linting.
+These are also tested by CI,
+but it's convenient to be able to find and fix small nits locally before push.
+
+# Updating the Environment and Environment Management Principles
+
+The notes below describe how to reliably update the environment
+for the labs, from system libraries up to Python packages.
 
 <details>
   <summary>
@@ -40,7 +68,7 @@ We want to limit the difficulty of the setup,
 while still keeping a process that is simple enough
 that it can be easily explained to students and tinkered with.
 
-That means dockerizing the entire class is out,
+That means running the entire class inside a user-managed container is out,
 as are other means of providing a completely pre-built environment.
 
 We compromise by using a transparent `Makefile`
@@ -58,11 +86,16 @@ This serves two very important purposes:
 Setup on Colab is perforce automated.
 - Colab provides GPU acceleration, which can be expensive, for free.
 
+The Colab environment is a shifting target --
+they seem to update PyTorch two weeks after release each time.
 Due to the limited support for automation in Colab,
-the best way to check the current version of libraries
+the best way to do things like check the current version of libraries
+and run tests
 is to manually execute a notebook.
-[Here's one](https://colab.research.google.com/drive/1fGd6_sV-tRS7n5PL9Tm0b7t923vhhXUc?usp=sharing)
-that checks the versions of major components -- including Python, CUD/A/NN, and torch.
+[Here's one](https://fsdl.me/environment-testing-colab)
+that checks that the environment is as expected and runs tests.
+It should be run from beginning to end with Runtime > Run all,
+but note that you have to provide a secret interactively in the final cell.
 </details>
 
 ## OS
@@ -80,7 +113,7 @@ As of writing, support for Windows Subsystem Linux 2 is in alpha.
 `conda` provides virtual environments, system package installation (including Python runtimes),
 and Python package installation.
 
-We use it for virtual envrionments, system package installation, and Python runtime installation.
+We use it for virtual environments, system package installation, and Python runtime installation.
 
 `poetry` also provides virtual environments and Python runtime installation,
 but it does not work well for installing system packages,
@@ -186,6 +219,7 @@ has a similar approach.
 They use `conda` for Python, CUDA, and CUDNN
 and `pip` for almost everything else.
 They install torch with `conda`,
+which is worth considering for extra robustness,
 but they don't target Colab or Docker.
 </details>
 
@@ -245,13 +279,14 @@ and update the local environment.
 
 <details> <summary>
   <h3> <code>dev</code>elopment and <code>lint</code>ing. </h3> Click to expand.
+
   These are the libraries used to do code quality assurance,
   including linting.
   </summary>
 This file is provided to allow these tools to be installed into
 the development environment.
 This eases integration of CQA with some developer tools.
-The actual source of truth is in `.pre-commit-config.yaml`.
+The actual source of truth is in .pre-commit-config.yaml.
 </details>
 
 <details> <summary>

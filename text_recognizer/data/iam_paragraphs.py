@@ -10,11 +10,12 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_info
 
 from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
 from text_recognizer.data.iam import IAM
-from text_recognizer.data.util import BaseDataset, convert_strings_to_labels
+from text_recognizer.data.util import BaseDataset, convert_strings_to_labels, resize_image
 import text_recognizer.metadata.iam_paragraphs as metadata
 from text_recognizer.stems.paragraph import ParagraphStem
 
 
+IMAGE_SCALE_FACTOR = metadata.IMAGE_SCALE_FACTOR
 MAX_LABEL_LENGTH = metadata.MAX_LABEL_LENGTH
 NEW_LINE_TOKEN = metadata.NEW_LINE_TOKEN
 PROCESSED_DATA_DIRNAME = metadata.PROCESSED_DATA_DIRNAME
@@ -43,7 +44,7 @@ class IAMParagraphs(BaseDataModule):
         return parser
 
     def prepare_data(self, *args, **kwargs) -> None:
-        if PROCESSED_DATA_DIRNAME.exists():
+        if (PROCESSED_DATA_DIRNAME / "_properties.json").exists():
             return
         rank_zero_info(
             "IAMParagraphs.prepare_data: Cropping IAM paragraph regions and saving them along with labels..."
@@ -116,21 +117,24 @@ def validate_input_and_output_dimensions(
     """Validate input and output dimensions against the properties of the dataset."""
     properties = get_dataset_properties()
 
-    max_image_shape = properties["crop_shape"]["max"] / metadata.IMAGE_SCALE_FACTOR
+    max_image_shape = properties["crop_shape"]["max"] / IMAGE_SCALE_FACTOR
     assert input_dims is not None and input_dims[1] >= max_image_shape[0] and input_dims[2] >= max_image_shape[1]
 
     # Add 2 because of start and end tokens
     assert output_dims is not None and output_dims[0] >= properties["label_length"]["max"] + 2
 
 
-def get_paragraph_crops_and_labels(iam: IAM, split: str) -> Tuple[Dict[str, Image.Image], Dict[str, str]]:
-    """Load IAM paragraph crops and labels for a given split."""
+def get_paragraph_crops_and_labels(
+    iam: IAM, split: str, scale_factor=IMAGE_SCALE_FACTOR
+) -> Tuple[Dict[str, Image.Image], Dict[str, str]]:
+    """Create IAM paragraph crops and labels for a given split, with resizing."""
     crops = {}
     labels = {}
     for iam_id in iam.ids_by_split[split]:
         image = iam.load_image(iam_id)
         para_region = iam.paragraph_region_by_id[iam_id]
         crops[iam_id] = image.crop([para_region[_] for _ in ["x1", "y1", "x2", "y2"]])
+        crops[iam_id] = resize_image(crops[iam_id], scale_factor=scale_factor)
         labels[iam_id] = iam.paragraph_string_by_id[iam_id]
     assert len(crops) == len(labels)
     return crops, labels

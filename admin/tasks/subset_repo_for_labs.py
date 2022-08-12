@@ -61,6 +61,9 @@ def subset_repo(info, output_dirname, up_to=MAX_LAB_NUMBER):
     for filename in glob.glob("instructions/setup/*.png"):
         shutil.copy(filename, setup_dir)
 
+    # Overview notebook
+    shutil.copy("notebooks/overview.ipynb", output_dir / "overview.ipynb")
+
     # Lab files
     for lab_number in info.keys():
         try:
@@ -77,8 +80,12 @@ def subset_repo(info, output_dirname, up_to=MAX_LAB_NUMBER):
 
         _process_new_files(new_paths, lab_number, filter_your_code=(not SOLUTION_VERSION_LABS))
 
+        # local image files
         for filename in glob.glob(f"instructions/lab{lab_number_str}/*.png"):
             shutil.copy(filename, lab_output_dir)
+
+        # testing script
+        shutil.copy("tasks/notebook_test.sh", lab_output_dir / ".notebook_test.sh")
 
 
 def _filter_your_code_blocks(lines, lab_number):
@@ -142,8 +149,8 @@ def _filter_filters(lines):
 def _replace_data_dirname(lines):
     filtered_lines = []
     for line in lines:
-        if line == '        return Path(__file__).resolve().parents[2] / "data"':
-            line = '        return Path(__file__).resolve().parents[3] / "data"'
+        if 'Path(__file__).resolve().parents[2] / "data"' in line:
+            line = line.replace(".parents[2]", ".parents[3]")
         filtered_lines.append(line)
     return filtered_lines
 

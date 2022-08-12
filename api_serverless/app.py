@@ -11,11 +11,10 @@ model = ParagraphTextRecognizer()
 
 def handler(event, _context):
     """Provide main prediction API."""
-    print(f"INFO event {event}")
     print("INFO loading image")
     image = _load_image(event)
     if image is None:
-        return {"statusCode": 400, "message": "neither image_url nor image found in json"}
+        return {"statusCode": 400, "message": "neither image_url nor image found in event"}
     print("INFO image loaded")
     print("INFO starting inference")
     pred = model.predict(image)

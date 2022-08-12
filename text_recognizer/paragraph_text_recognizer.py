@@ -34,7 +34,7 @@ class ParagraphTextRecognizer:
 
     @torch.no_grad()
     def predict(self, image: Union[str, Path, Image.Image]) -> str:
-        """Predict/infer text in input image (which can be a file path)."""
+        """Predict/infer text in input image (which can be a file path or url)."""
         image_pil = image
         if not isinstance(image, Image.Image):
             image_pil = util.read_image_pil(image, grayscale=True)

@@ -19,20 +19,19 @@ from .emnist_lines import EMNISTLines
 
 # Hide lines above until Lab 02
 
-# Hide lines below until Lab 05
-from .emnist_lines2 import EMNISTLines2
+# Hide lines below until Lab 03
+from .iam_paragraphs import IAMParagraphs
+
+# Hide lines above until Lab 03
+
+# Hide lines below until Lab 04
 from .iam_lines import IAMLines
 
-# Hide lines above until Lab 05
+# Hide lines above until Lab 04
 
-# Hide lines below until Lab 07
-from .iam_paragraphs import IAMParagraphs
+# Hide lines below until Lab 05
 from .iam_synthetic_paragraphs import IAMSyntheticParagraphs
 from .iam_original_and_synthetic_paragraphs import IAMOriginalAndSyntheticParagraphs
-
-# Hide lines above until Lab 07
-
-# Hide lines below until Lab 08
 from .fake_images import FakeImageData
 
-# Hide lines above until Lab 08
+# Hide lines above until Lab 05

@@ -19,7 +19,7 @@ pip-tools-lint:
 	pip-compile requirements/prod.in && pip-compile requirements/dev.in && pip-compile requirements/dev-lint.in
 	pip-sync requirements/prod.txt requirements/dev.txt requirements/dev-lint.txt
 
-# bump versions of transitive dependencies
+# Bump versions of transitive dependencies
 pip-tools-upgrade:
 	pip install pip-tools==6.3.1 setuptools==59.5.0
 	pip-compile --upgrade requirements/prod.in && pip-compile --upgrade requirements/dev.in && pip-compile --upgrade requirements/dev-lint.in
@@ -31,3 +31,15 @@ train-mnist-cnn-ddp:
 # Lint
 lint:
 	tasks/lint.sh
+
+# Test notebooks in source repo
+test-notebooks:
+	tasks/notebook_test.sh $(SELECT_BY)
+
+# Test all lab notebooks from the folder for provided lab InDeX
+test-labs-up-to:
+	cd lab$(IDX) && ./.notebook_test.sh
+
+# Test only the notebooks for the provided lab InDeX
+test-lab:
+	cd lab$(IDX) && ./.notebook_test.sh $(IDX)

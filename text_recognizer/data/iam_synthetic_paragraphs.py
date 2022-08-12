@@ -11,17 +11,16 @@ import torch
 from text_recognizer.data.base_data_module import load_and_print_info
 from text_recognizer.data.iam import IAM
 from text_recognizer.data.iam_lines import (
-    line_crops_and_labels,
-    load_line_crops,
-    load_line_labels,
+    generate_line_crops_and_labels,
+    load_processed_line_crops,
+    load_processed_line_labels,
     save_images_and_labels,
 )
 from text_recognizer.data.iam_paragraphs import IAMParagraphs
-from text_recognizer.data.util import convert_strings_to_labels, resize_image
+from text_recognizer.data.util import convert_strings_to_labels
 import text_recognizer.metadata.iam_synthetic_paragraphs as metadata
 
 
-IMAGE_SCALE_FACTOR = metadata.IMAGE_SCALE_FACTOR
 NEW_LINE_TOKEN = metadata.NEW_LINE_TOKEN
 
 PROCESSED_DATA_DIRNAME = metadata.PROCESSED_DATA_DIRNAME
@@ -35,7 +34,6 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         self.line_crops: Optional[List[Image.Image]] = None
         self.line_labels: Optional[List[str]] = None
         self.trainval_transform.scale_factor = 1  # we perform rescaling ahead of time, in prepare_data
-        self.transform.scale_factor = 1
 
     def prepare_data(self, *args, **kwargs) -> None:
         """
@@ -53,16 +51,14 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
         for split in ["train"]:  # synthetic dataset is only used in training phase
             rank_zero_info(f"Cropping IAM line regions and loading labels for {split} data split...")
-            crops, labels = line_crops_and_labels(iam, split)
-
-            crops = [resize_image(crop, IMAGE_SCALE_FACTOR) for crop in crops]
+            crops, labels = generate_line_crops_and_labels(iam, split)
             save_images_and_labels(crops, labels, split, PROCESSED_DATA_DIRNAME)
 
     def setup(self, stage: str = None) -> None:
         rank_zero_info(f"IAMSyntheticParagraphs.setup({stage}): Loading train IAM paragraph regions and lines...")
 
         if stage == "fit" or stage is None:
-            self._load_crops_and_labels()
+            self._load_processed_crops_and_labels()
             self.data_train = IAMSyntheticParagraphsDataset(
                 line_crops=cast(List[Image.Image], self.line_crops),
                 line_labels=cast(List[str], self.line_labels),
@@ -73,11 +69,11 @@ class IAMSyntheticParagraphs(IAMParagraphs):
                 transform=self.trainval_transform,
             )
 
-    def _load_crops_and_labels(self):
+    def _load_processed_crops_and_labels(self):
         if self.line_crops is None:
-            self.line_crops = load_line_crops("train", PROCESSED_DATA_DIRNAME)
+            self.line_crops = load_processed_line_crops("train", PROCESSED_DATA_DIRNAME)
         if self.line_labels is None:
-            self.line_labels = load_line_labels("train", PROCESSED_DATA_DIRNAME)
+            self.line_labels = load_processed_line_labels("train", PROCESSED_DATA_DIRNAME)
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
