@@ -59,5 +59,6 @@ class ParagraphStem(ImageStem):
                     transforms.RandomPerspective(**random_perspective_kwargs),
                     transforms.GaussianBlur(**gaussian_blur_kwargs),
                     transforms.RandomAdjustSharpness(**sharpness_kwargs),
+                    transforms.RandomInvert(p=0.5),
                 ]
             )
