@@ -29,12 +29,12 @@ class ParagraphStem(ImageStem):
             self.pil_transforms = transforms.Compose([transforms.CenterCrop(IMAGE_SHAPE)])
         else:
             if color_jitter_kwargs is None:
-                color_jitter_kwargs = {"brightness": 0.4, "contrast": 0.4}
+                color_jitter_kwargs = {"brightness": 0.5, "contrast": 0.5}
             if random_affine_kwargs is None:
                 random_affine_kwargs = {
                     "degrees": 3,
                     "shear": 6,
-                    "scale": (0.95, 1),
+                    "scale": (0.9, 1),
                     "interpolation": transforms.InterpolationMode.BILINEAR,
                 }
             if random_perspective_kwargs is None:

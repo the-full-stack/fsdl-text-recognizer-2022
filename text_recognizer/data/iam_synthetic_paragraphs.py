@@ -7,6 +7,7 @@ import numpy as np
 from PIL import Image
 from pytorch_lightning.utilities.rank_zero import rank_zero_info
 import torch
+from torch.utils.data import DataLoader
 
 from text_recognizer.data.base_data_module import load_and_print_info
 from text_recognizer.data.iam import IAM
@@ -73,6 +74,16 @@ class IAMSyntheticParagraphs(IAMParagraphs):
             self.line_crops = load_processed_line_crops("train", PROCESSED_DATA_DIRNAME)
         if self.line_labels is None:
             self.line_labels = load_processed_line_labels("train", PROCESSED_DATA_DIRNAME)
+
+    def train_dataloader(self):
+        return DataLoader(
+            self.data_train,
+            shuffle=True,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            pin_memory=self.on_gpu,
+            persistent_workers=True,
+        )
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
@@ -152,15 +163,17 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
         indices = random.sample(self.ids, k=num_lines)
 
         while True:
-            datum = join_line_crops_to_form_paragraph([self.line_crops[i] for i in indices])
+            datum = join_line_crops_to_form_paragraph(
+                [self.line_crops[i] for i in indices],
+                max_height=self.input_dims[1],
+                max_width=self.input_dims[2],
+                randomize=True,
+            )
             labels = NEW_LINE_TOKEN.join([self.line_labels[i] for i in indices])
 
-            if (
-                (len(labels) <= self.output_dims[0] - 2)
-                and (datum.height <= self.input_dims[1])
-                and (datum.width <= self.input_dims[2])
-            ):
+            if (datum is not None) and (len(labels) <= self.output_dims[0] - 2):
                 break
+
             indices = indices[:-1]
 
         if self.transform is not None:
@@ -172,17 +185,30 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
         return datum, target
 
 
-def join_line_crops_to_form_paragraph(line_crops: Sequence[Image.Image]) -> Image.Image:
+def join_line_crops_to_form_paragraph(
+    line_crops: Sequence[Image.Image], max_height: int, max_width: int, randomize: bool
+) -> Optional[Image.Image]:
     """Horizontally stack line crops and return a single image forming the paragraph."""
     crop_shapes = np.array([_.size[::-1] for _ in line_crops])
     para_height = crop_shapes[:, 0].sum()
     para_width = crop_shapes[:, 1].max()
+    if para_height > max_height or para_width > max_width:
+        return None
 
-    para_image = Image.new(mode="L", size=(para_width, para_height), color=0)
+    y_offset_max = min(24, (max_height - para_height) // len(line_crops))
+    y_offsets = [random.randint(0, y_offset_max) if randomize else 0 for _ in range(len(line_crops))]
+
+    para_image = Image.new(mode="L", size=(para_width, para_height + sum(y_offsets)), color=0)
     current_height = 0
-    for line_crop in line_crops:
-        para_image.paste(line_crop, box=(0, current_height))
-        current_height += line_crop.height
+
+    for i, line_crop in enumerate(line_crops):
+        x_offset = 0
+        if randomize:
+            x_offset_max = para_width - line_crop.size[0]
+            x_offset = random.randint(0, x_offset_max)
+
+        para_image.paste(line_crop, box=(x_offset, current_height + y_offsets[i]))
+        current_height += line_crop.height + y_offsets[i]
     return para_image
 
 
