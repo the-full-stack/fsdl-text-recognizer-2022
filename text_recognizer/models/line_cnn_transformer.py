@@ -114,27 +114,8 @@ class LineCNNTransformer(nn.Module):
         output = self.fc(output)  # (Sy, B, C)
         return output
 
-    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        """Encodes x with LineCNN and and then decodes it with Transformer, using y.
-
-        Parameters
-        ----------
-        x
-            (B, H, W) image
-        y
-            (B, Sy) with elements in [0, C-1] where C is num_classes
-
-        Returns
-        -------
-        torch.Tensor
-            (B, C, Sy) logits
-        """
-        x = self.encode(x)  # (Sx, B, E)
-        output = self.decode(x, y)  # (Sy, B, C)
-        return output.permute(1, 2, 0)  # (B, C, Sy)
-
-    def predict(self, x: torch.Tensor) -> torch.Tensor:
-        """Predict sequences of tokens from input images.
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Predict sequences of tokens from input images auto-regressively.
 
         Parameters
         ----------
