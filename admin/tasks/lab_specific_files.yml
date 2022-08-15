@@ -54,7 +54,14 @@ common:
   - text_recognizer/models/transformer_util.py
   - text_recognizer/stems/paragraph.py
 04:
+  - notebooks/lab04_experiments.ipynb
   - text_recognizer/callbacks/__init__.py
   - text_recognizer/callbacks/model.py
   - text_recognizer/callbacks/optim.py
   - text_recognizer/callbacks/util.py
+  - text_recognizer/callbacks/imtotext.py
+  - text_recognizer/data/iam_lines.py
+  - text_recognizer/metadata/iam_lines.py
+  - text_recognizer/models/line_cnn.py
+  - text_recognizer/models/line_cnn_transformer.py
+  - text_recognizer/stems/line.py
