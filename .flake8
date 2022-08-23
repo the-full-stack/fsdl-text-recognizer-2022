@@ -36,6 +36,6 @@ per-file-ignores =
   # list of case-by-case ignores, see files for details
   */__init__.py:F401,I
   */data/*.py:DAR
-  text_recognizer/util.py:DAR101
-  training/run_experiment.py:I202
-  app_gradio/app.py:I202
+  *text_recognizer/util.py:DAR101,F401
+  *training/run_experiment.py:I202
+  *app_gradio/app.py:I202
