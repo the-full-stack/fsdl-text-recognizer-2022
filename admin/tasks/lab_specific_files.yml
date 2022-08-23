@@ -1,6 +1,7 @@
 common:
   - .flake8
   - .gitignore
+  - .pre-commit-config.yaml
   - environment.yml
   - LICENSE.txt
   - Makefile
@@ -65,3 +66,14 @@ common:
   - text_recognizer/models/line_cnn.py
   - text_recognizer/models/line_cnn_transformer.py
   - text_recognizer/stems/line.py
+05:
+  - .github/workflows/pre-commit.yml
+  - .flake8
+  - .pre-commit-config.yaml
+  - notebooks/lab05_troubleshooting.ipynb
+  - tasks/lint.sh
+  - text_recognizer/data/fake_images.py
+  - text_recognizer/tests/test_callback_utils.py
+  - text_recognizer/tests/test_iam.py
+  - training/tests/test_memorize_iam.sh
+  - training/tests/test_run_experiment.sh
