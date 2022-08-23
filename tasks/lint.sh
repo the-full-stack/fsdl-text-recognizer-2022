@@ -4,17 +4,6 @@ set +e
 
 FAILURE=false
 
-# apply safety checking to the production environment
-echo "safety (failure is tolerated)"
-FILE=requirements/prod.txt
-if [ -f "$FILE" ]; then
-    # We're in the main repo
-    safety check -r requirements/prod.txt
-else
-    # We're in the labs repo
-    safety check -r ../requirements/prod.txt
-fi
-
 # apply automatic formatting
 echo "black"
 pre-commit run black || FAILURE=true
@@ -23,7 +12,7 @@ pre-commit run black || FAILURE=true
 echo "flake8"
 pre-commit run flake8 || FAILURE=true
 
-# check for shell scripting style violations
+# check for shell scripting style violations and common bugs
 echo "shellcheck"
 pre-commit run shellcheck || FAILURE=true
 
