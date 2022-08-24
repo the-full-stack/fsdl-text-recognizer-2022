@@ -30,8 +30,12 @@ from .iam_lines import IAMLines
 # Hide lines above until Lab 04
 
 # Hide lines below until Lab 05
-from .iam_synthetic_paragraphs import IAMSyntheticParagraphs
-from .iam_original_and_synthetic_paragraphs import IAMOriginalAndSyntheticParagraphs
 from .fake_images import FakeImageData
 
 # Hide lines above until Lab 05
+
+# Hide lines below until Lab 06
+from .iam_synthetic_paragraphs import IAMSyntheticParagraphs
+from .iam_original_and_synthetic_paragraphs import IAMOriginalAndSyntheticParagraphs
+
+# Hide lines above until Lab 06

@@ -1,4 +1,7 @@
 #!/bin/bash
+set -uo pipefail
+set +e
+
 FAILURE=false
 
 echo "running full loop test with CNN on fake data"
