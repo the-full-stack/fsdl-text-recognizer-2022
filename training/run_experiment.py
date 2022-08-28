@@ -194,7 +194,8 @@ def main():
     # Hide lines below until Lab 05
     trainer.profiler = pl.profiler.PassThroughProfiler()  # turn profiling off during testing
     # Hide lines above until Lab 05
-    trainer.test(lit_model, datamodule=data, ckpt_path="best")
+    ckpt_path = "last" if args.fast_dev_run else "best"
+    trainer.test(lit_model, datamodule=data, ckpt_path=ckpt_path)
 
     best_model_path = checkpoint_callback.best_model_path
     if best_model_path:
