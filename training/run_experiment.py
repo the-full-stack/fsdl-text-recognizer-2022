@@ -194,7 +194,6 @@ def main():
     # Hide lines below until Lab 05
     trainer.profiler = pl.profiler.PassThroughProfiler()  # turn profiling off during testing
     # Hide lines above until Lab 05
-    trainer.test(lit_model, datamodule=data, ckpt_path="best")
 
     best_model_path = checkpoint_callback.best_model_path
     if best_model_path:
@@ -202,7 +201,10 @@ def main():
         # Hide lines below until Lab 04
         if args.wandb:
             rank_zero_info("Best model also uploaded to W&B ")
-    # Hide lines above until Lab 04
+        # Hide lines above until Lab 04
+        trainer.test(datamodule=data, ckpt_path=best_model_path)
+    else:
+        trainer.test(lit_model, datamodule=data)
 
 
 if __name__ == "__main__":
