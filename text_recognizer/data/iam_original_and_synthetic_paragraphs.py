@@ -1,7 +1,7 @@
 """IAM Original and Synthetic Paragraphs Dataset class."""
 import argparse
 
-from torch.utils.data import ConcatDataset, DataLoader
+from torch.utils.data import ConcatDataset
 
 from text_recognizer.data.base_data_module import BaseDataModule, load_and_print_info
 from text_recognizer.data.iam_paragraphs import IAMParagraphs
@@ -26,6 +26,7 @@ class IAMOriginalAndSyntheticParagraphs(BaseDataModule):
     def add_to_argparse(parser):
         BaseDataModule.add_to_argparse(parser)
         parser.add_argument("--augment_data", type=str, default="true")
+        IAMSyntheticParagraphs.add_to_argparse(parser)
         return parser
 
     def prepare_data(self, *args, **kwargs) -> None:
@@ -42,18 +43,6 @@ class IAMOriginalAndSyntheticParagraphs(BaseDataModule):
 
         if stage == "test" or stage is None:
             self.data_test = self.iam_paragraphs.data_test
-
-    def train_dataloader(self):
-        # Pair this synthetic data creation with --reload_dataloaders_every_n_epochs argument in trainer.fit()
-        self.iam_syn_paragraphs._synthesize_dataset()
-        self.data_train = ConcatDataset([self.iam_paragraphs.data_train, self.iam_syn_paragraphs.data_train])
-        return DataLoader(
-            self.data_train,
-            shuffle=True,
-            batch_size=self.batch_size,
-            num_workers=self.num_workers,
-            pin_memory=self.on_gpu,
-        )
 
     def __repr__(self) -> str:
         """Print info about the dataset."""
