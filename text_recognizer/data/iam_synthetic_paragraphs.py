@@ -1,7 +1,7 @@
 """IAM Synthetic Paragraphs Dataset class."""
 import argparse
 import random
-from typing import Any, Callable, cast, List, Optional, Sequence, Tuple
+from typing import Any, Callable, List, Sequence, Tuple
 
 import numpy as np
 from PIL import Image
@@ -22,8 +22,8 @@ import text_recognizer.metadata.iam_synthetic_paragraphs as metadata
 
 
 NEW_LINE_TOKEN = metadata.NEW_LINE_TOKEN
-
 PROCESSED_DATA_DIRNAME = metadata.PROCESSED_DATA_DIRNAME
+DATASET_LEN = metadata.DATASET_LEN
 
 
 class IAMSyntheticParagraphs(IAMParagraphs):
@@ -31,8 +31,10 @@ class IAMSyntheticParagraphs(IAMParagraphs):
 
     def __init__(self, args: argparse.Namespace = None):
         super().__init__(args)
-        self.line_crops: Optional[List[Image.Image]] = None
-        self.line_labels: Optional[List[str]] = None
+        self.line_crops = None
+        self.line_label = None
+
+        self.dataset_len = args.get("dataset_len", DATASET_LEN)
 
     def prepare_data(self, *args, **kwargs) -> None:
         """
@@ -59,9 +61,9 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         if stage == "fit" or stage is None:
             self._load_processed_crops_and_labels()
             self.data_train = IAMSyntheticParagraphsDataset(
-                line_crops=cast(List[Image.Image], self.line_crops),
-                line_labels=cast(List[str], self.line_labels),
-                dataset_len=64 * 8 * 40,
+                line_crops=self.line_crops,
+                line_labels=self.line_labels,
+                dataset_len=self.dataset_len,
                 inverse_mapping=self.inverse_mapping,
                 input_dims=self.input_dims,
                 output_dims=self.output_dims,
@@ -93,21 +95,13 @@ class IAMSyntheticParagraphs(IAMParagraphs):
         )
         return basic + data
 
+    def add_to_argparse(parser):
+        parser.add_argument("--dataset_len", type=int, default=DATASET_LEN)
+        return parser
+
 
 class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
-    """Base Dataset class that simply processes data and targets through optional transforms.
-
-    Parameters
-    ----------
-    data
-        commonly these are torch tensors, numpy arrays, or PIL Images
-    targets
-        commonly these are torch tensors or numpy arrays
-    transform
-        function that takes a datum and returns the same
-    target_transform
-        function that takes a target and returns the same
-    """
+    """Dataset of synthetic paragraphs built out of individual IAM lines."""
 
     def __init__(
         self,
@@ -145,7 +139,7 @@ class IAMSyntheticParagraphsDataset(torch.utils.data.Dataset):
             self.seed_set = True
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
-        """Return a datum and its target, after processing by transforms."""
+        """Return a random paragraph, using the first index as a seed."""
         # Since shuffle is True for train dataloaders, the first index will be different on different GPUs
         self._set_seed(index)
         num_lines = random.randint(self.min_num_lines, self.max_num_lines)

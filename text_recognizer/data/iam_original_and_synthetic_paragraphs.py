@@ -26,6 +26,7 @@ class IAMOriginalAndSyntheticParagraphs(BaseDataModule):
     def add_to_argparse(parser):
         BaseDataModule.add_to_argparse(parser)
         parser.add_argument("--augment_data", type=str, default="true")
+        IAMSyntheticParagraphs.add_to_argparse(parser)
         return parser
 
     def prepare_data(self, *args, **kwargs) -> None:
