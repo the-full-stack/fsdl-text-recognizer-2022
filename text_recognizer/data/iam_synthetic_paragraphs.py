@@ -32,9 +32,9 @@ class IAMSyntheticParagraphs(IAMParagraphs):
     def __init__(self, args: argparse.Namespace = None):
         super().__init__(args)
         self.line_crops = None
-        self.line_label = None
+        self.line_labels = None
 
-        self.dataset_len = args.get("dataset_len", DATASET_LEN)
+        self.dataset_len = self.args.get("dataset_len", DATASET_LEN)
 
     def prepare_data(self, *args, **kwargs) -> None:
         """

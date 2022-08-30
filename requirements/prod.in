@@ -15,4 +15,3 @@ torch>=1.12,<1.13
 torchvision>=0.13
 # versioned to avoid breaking change in minor version update
 markupsafe<2.1
-# python-dateutil==2.8.1
