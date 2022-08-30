@@ -81,3 +81,4 @@ common:
   - notebooks/lab06_data.ipynb
   - text_recognizer/data/iam_original_and_synthetic_paragraphs.py
   - text_recognizer/data/iam_synthetic_paragraphs.py
+  - text_recognizer/metadata/iam_synthetic_paragraphs.py
