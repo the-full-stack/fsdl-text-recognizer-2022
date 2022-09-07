@@ -121,7 +121,7 @@ def print_info(artifact, run=None):
     if run is None:
         run = get_logging_run(artifact)
 
-    full_artifact_name = "{artifact.entity}/{artifact.project}/{artifact.name}"
+    full_artifact_name = f"{artifact.entity}/{artifact.project}/{artifact.name}"
     print(f"Using artifact {full_artifact_name}")
     artifact_url_prefix = f"https://wandb.ai/{artifact.entity}/{artifact.project}/artifacts/{artifact.type}"
     artifact_url_suffix = f"{artifact.name.replace(':', '/')}"
