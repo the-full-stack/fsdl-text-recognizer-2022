@@ -1,35 +1,34 @@
+import json
 import os
-import signal
+
+import requests
 
 from app_gradio import app
+from text_recognizer import util
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 
+TEST_IMAGE = "text_recognizer/tests/support/paragraphs/a01-077.png"
+
+
 def test_local_run():
-    """A quick test to make sure we can build the application locally."""
+    """A quick test to make sure we can build the app and ping the API locally."""
     backend = app.PredictorBackend()
     frontend = app.make_frontend(fn=backend.run)
 
-    signal.setitimer(signal.ITIMER_REAL, 10)  # set a timer for ten seconds, then
-    try:
-        frontend.launch(share=False, debug=True)  # run the server
-    except TimeoutSignal:  # and after the timer goes off
-        return  # we've passed the test -- server ran for 10s without error
+    # run the UI without blocking
+    frontend.launch(share=False, prevent_thread_lock=True)
+    local_url = frontend.local_url
+    get_response = requests.get(local_url)
+    assert get_response.status_code == 200
 
+    image_b64 = util.encode_b64_image(util.read_image_pil(TEST_IMAGE))
 
-# For details on the below strategy for terminating Python code
-#   see StackOverflow discussion here: https://stackoverflow.com/a/25027182
-
-
-class TimeoutSignal(Exception):
-    """A simple class to represent the timeout above."""
-
-
-def handle_timeout(signum, frame):
-    """Converts a system signal to a TimeoutSignal."""
-    raise TimeoutSignal
-
-
-signal.signal(signal.SIGALRM, handle_timeout)
+    local_api = f"{local_url}api/predict"
+    headers = {"Content-Type": "application/json"}
+    payload = json.dumps({"data": ["data:image/png;base64," + image_b64]})
+    post_response = requests.post(local_api, data=payload, headers=headers)
+    assert "error" not in post_response.json()
+    assert "data" in post_response.json()
