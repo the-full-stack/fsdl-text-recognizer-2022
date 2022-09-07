@@ -44,7 +44,7 @@ PROD_STAGING_ROOT = PROJECT_ROOT / "text_recognizer" / "artifacts"
 
 def main(args):
     prod_staging_directory = PROD_STAGING_ROOT / args.staged_model_name
-    prod_staging_directory.mkdir(exist_ok=True)
+    prod_staging_directory.mkdir(exist_ok=True, parents=True)
     entity = _get_entity_from(args)
     # if we're just fetching an already compiled model
     if args.fetch:
