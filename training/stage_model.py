@@ -120,7 +120,13 @@ def get_logging_run(artifact):
 def print_info(artifact, run=None):
     if run is None:
         run = get_logging_run(artifact)
-    print(f"Using artifact {artifact.project}/{artifact.entity}/{artifact.name}")
+
+    full_artifact_name = "{artifact.entity}/{artifact.project}/{artifact.name}"
+    print(f"Using artifact {full_artifact_name}")
+    artifact_url_prefix = f"https://wandb.ai/{artifact.entity}/{artifact.project}/artifacts/{artifact.type}"
+    artifact_url_suffix = f"{artifact.name.replace(':', '/')}"
+    print(f"View at URL: {artifact_url_prefix}/{artifact_url_suffix}")
+
     print(f"Logged by {run.name} -- {run.project}/{run.entity}/{run.id}")
     print(f"View at URL: {run.url}")
 
@@ -221,13 +227,13 @@ def _setup_parser():
     parser.add_argument(
         "--fetch",
         action="store_true",
-        help=f"If provided, check entity/from_project for an artifact with the provided staged_model_name and download its latest version to {PROD_STAGING_ROOT}/staged_model_name.",
+        help=f"If provided, check ENTITY/FROM_PROJECT for an artifact with the provided STAGED_MODEL_NAME and download its latest version to {PROD_STAGING_ROOT}/STAGED_MODEL_NAME.",
     )
     parser.add_argument(
         "--entity",
         type=str,
         default=None,
-        help=f"Entity from which to download the checkpoint. Note that checkpoints are uploaded to the logged-in wandb entity. Pass the value DEFAULT to use the default entity, {DEFAULT_ENTITY}.",
+        help=f"Entity from which to download the checkpoint. Note that checkpoints are always uploaded to the logged-in wandb entity. Pass the value 'DEFAULT' to also download from default entity, which is currently {DEFAULT_ENTITY}.",
     )
     parser.add_argument(
         "--from_project",
@@ -245,13 +251,13 @@ def _setup_parser():
         "--run",
         type=str,
         default=None,
-        help=f"Optionally, run to check for an artifact of type {MODEL_CHECKPOINT_TYPE} that has the provided ckpt_alias. Default is None.",
+        help=f"Optionally, the name of a run to check for an artifact of type {MODEL_CHECKPOINT_TYPE} that has the provided CKPT_ALIAS. Default is None.",
     )
     parser.add_argument(
         "--ckpt_alias",
         type=str,
         default=BEST_CHECKPOINT_ALIAS,
-        help=f"Alias that identifies which model checkpoint should be staged. For flexibility, set the artifact's alias manually or programmatically elsewhere. Default is '{BEST_CHECKPOINT_ALIAS}'.",
+        help=f"Alias that identifies which model checkpoint should be staged.The artifact's alias can be set manually or programmatically elsewhere. Default is '{BEST_CHECKPOINT_ALIAS}'.",
     )
     parser.add_argument(
         "--staged_model_name",

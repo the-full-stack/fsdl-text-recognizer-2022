@@ -26,8 +26,10 @@ MODEL_FILE = "model.pt"
 class ParagraphTextRecognizer:
     """Recognizes a paragraph of text in an image."""
 
-    def __init__(self):
-        self.model = torch.jit.load(STAGED_MODEL_DIRNAME / MODEL_FILE)
+    def __init__(self, model_path=None):
+        if model_path is None:
+            model_path = STAGED_MODEL_DIRNAME / MODEL_FILE
+        self.model = torch.jit.load(model_path)
         self.mapping = self.model.mapping
         self.ignore_tokens = self.model.ignore_tokens
         self.stem = ParagraphStem()
@@ -52,7 +54,11 @@ def convert_y_label_to_string(y: torch.Tensor, mapping: Sequence[str], ignore_to
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("filename", type=str)
+    parser.add_argument(
+        "filename",
+        type=str,
+        help="Name for an image file. This can be a local path, a URL, a URI from AWS/GCP/Azure storage, an HDFS path, or any other resource locator supported by the smart_open library.",
+    )
     args = parser.parse_args()
 
     text_recognizer = ParagraphTextRecognizer()

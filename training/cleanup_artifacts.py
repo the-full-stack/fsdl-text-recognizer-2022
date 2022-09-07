@@ -23,7 +23,7 @@ import wandb
 
 api = wandb.Api()
 
-DEFAULT_PROJECT = "fsdl-text-recognizer-2021-training"
+DEFAULT_PROJECT = "fsdl-text-recognizer-2022-training"
 DEFAULT_ENTITY = api.default_entity
 
 
@@ -33,7 +33,7 @@ def _setup_parser():
         "--entity",
         type=str,
         default=None,
-        help="The entity from which to remove artifacts. Provide the value DEFAULT"
+        help="The entity from which to remove artifacts. Provide the value DEFAULT "
         + f"to use the default WANDB_ENTITY, which is currently {DEFAULT_ENTITY}.",
     )
     parser.add_argument(
