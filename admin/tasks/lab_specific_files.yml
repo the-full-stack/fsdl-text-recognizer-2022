@@ -82,3 +82,22 @@ common:
   - text_recognizer/data/iam_original_and_synthetic_paragraphs.py
   - text_recognizer/data/iam_synthetic_paragraphs.py
   - text_recognizer/metadata/iam_synthetic_paragraphs.py
+07:
+  - api_serverless/__init__.py
+  - api_serverless/api.py
+  - api_serverless/Dockerfile
+  - app_gradio/__init__.py
+  - app_gradio/1f95e.png
+  - app_gradio/app.py
+  - app_gradio/Dockerfile
+  - app_gradio/README.md
+  - app_gradio/tests/test_app.py
+  - notebooks/lab07_deployment.ipynb
+  - text_recognizer/paragraph_text_recognizer.py
+  - text_recognizer/tests/support/paragraphs/a01-077.png
+  - text_recognizer/tests/support/paragraphs/a01-087.png
+  - text_recognizer/tests/support/paragraphs/a01-107.png
+  - text_recognizer/tests/support/paragraphs/a02-046.png
+  - training/cleanup_artifacts.py
+  - training/stage_model.py
+  - training/tests/test_model_development.sh

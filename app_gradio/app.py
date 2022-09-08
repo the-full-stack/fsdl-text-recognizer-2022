@@ -72,7 +72,6 @@ def make_frontend(
 
     allow_flagging = "never"
     # Hide lines below until Lab 08
-    readme = _load_readme(with_logging=gantry)
     if flagging:
         allow_flagging = "manual"
         api_key = get_api_key()
@@ -90,6 +89,8 @@ def make_frontend(
     else:
         flagging_callback, flagging_dir = None, None
     # Hide lines above until Lab 08
+
+    readme = _load_readme(with_logging=allow_flagging == "manual")
 
     # build a basic browser interface to a Python function
     frontend = gr.Interface(
@@ -180,7 +181,6 @@ class PredictorBackend:
         logging.info(f"PRED >begin\n{pred}\nPRED >end")
 
 
-# Hide lines below until Lab 08
 def _load_readme(with_logging=False):
     with open(README) as f:
         lines = f.readlines()
@@ -189,9 +189,6 @@ def _load_readme(with_logging=False):
 
         readme = "".join(lines)
     return readme
-
-
-# Hide lines above until Lab 08
 
 
 def _make_parser():
