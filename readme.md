@@ -13,3 +13,4 @@ Implements a text recognizer using a hypermodern 2022 DL stack:
 - Predictor backend containerization via Docker and deployment as a microservice on AWS Lambda
 - Pure Python frontend web application in Gradio
 - Model monitoring with Gantry
+- Basic load testing with Locust
