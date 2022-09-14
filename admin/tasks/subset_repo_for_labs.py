@@ -30,6 +30,7 @@ import shutil
 
 import yaml
 
+
 MAX_LAB_NUMBER = 10
 REPO_DIRNAME = Path(__file__).resolve().parents[2]
 INFO_FILENAME = REPO_DIRNAME / "admin" / "tasks" / "lab_specific_files.yml"

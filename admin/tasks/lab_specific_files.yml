@@ -13,7 +13,7 @@ common:
   - requirements/prod.txt
 # keys are mapped to ints by yaml loading,
 #  so zero-filling here is not respected
-01:
+1:
   - notebooks/lab01_pytorch.ipynb
   - text_recognizer/__init__.py
   - text_recognizer/data/util.py
@@ -22,7 +22,7 @@ common:
   - text_recognizer/models/__init__.py
   - text_recognizer/models/mlp.py
   - text_recognizer/util.py
-02:
+2:
   - notebooks/lab02a_lightning.ipynb
   - notebooks/lab02b_cnn.ipynb
   - text_recognizer/data/__init__.py
@@ -42,7 +42,7 @@ common:
   - training/__init__.py
   - training/run_experiment.py
   - training/util.py
-03:
+3:
   - notebooks/lab03_transformers.ipynb
   - text_recognizer/data/iam.py
   - text_recognizer/data/iam_paragraphs.py
@@ -54,7 +54,7 @@ common:
   - text_recognizer/models/resnet_transformer.py
   - text_recognizer/models/transformer_util.py
   - text_recognizer/stems/paragraph.py
-04:
+4:
   - notebooks/lab04_experiments.ipynb
   - text_recognizer/callbacks/__init__.py
   - text_recognizer/callbacks/model.py
@@ -66,7 +66,7 @@ common:
   - text_recognizer/models/line_cnn.py
   - text_recognizer/models/line_cnn_transformer.py
   - text_recognizer/stems/line.py
-05:
+5:
   - .github/workflows/pre-commit.yml
   - .flake8
   - .pre-commit-config.yaml
@@ -77,12 +77,12 @@ common:
   - text_recognizer/tests/test_iam.py
   - training/tests/test_memorize_iam.sh
   - training/tests/test_run_experiment.sh
-06:
+6:
   - notebooks/lab06_data.ipynb
   - text_recognizer/data/iam_original_and_synthetic_paragraphs.py
   - text_recognizer/data/iam_synthetic_paragraphs.py
   - text_recognizer/metadata/iam_synthetic_paragraphs.py
-07:
+7:
   - api_serverless/__init__.py
   - api_serverless/api.py
   - api_serverless/Dockerfile
@@ -101,3 +101,7 @@ common:
   - training/cleanup_artifacts.py
   - training/stage_model.py
   - training/tests/test_model_development.sh
+8:
+  - notebooks/lab08_monitoring.ipynb
+  - app_gradio/flagging.py
+  - app_gradio/s3_util.py
