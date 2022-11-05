@@ -80,6 +80,7 @@ def split_and_validate_b64_string(b64_string):
 
 
 # Hide lines above until Lab 08
+# Hide lines below until Lab 07
 
 
 def encode_b64_image(image, format="png"):
@@ -88,6 +89,9 @@ def encode_b64_image(image, format="png"):
     image.save(_buffer, format=format)  # but which we write to like a file
     encoded_image = base64.b64encode(_buffer.getvalue()).decode("utf8")
     return encoded_image
+
+
+# Hide lines above until Lab 07
 
 
 def compute_sha256(filename: Union[Path, str]):
