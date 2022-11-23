@@ -7,10 +7,5 @@
     "ms-python.python"
   ],
 
-  "runArgs": [
-	  "--gpus",
-	  "all"
-  ],
-
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}"
 }
