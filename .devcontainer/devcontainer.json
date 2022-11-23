@@ -1,5 +1,5 @@
 {
-  "name": "GPU Development Environment",
+  "name": "FSDL",
 
   "image": "fullstackdeeplearning/development:latest",
 
@@ -7,5 +7,8 @@
     "ms-python.python"
   ],
 
-  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}"
+  "runArgs": [
+	  "--gpus",
+    "all"
+	]
 }
