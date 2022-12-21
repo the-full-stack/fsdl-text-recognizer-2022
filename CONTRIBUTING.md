@@ -103,7 +103,7 @@ but note that you have to provide a secret interactively in the final cell.
 We aim for bug-free execution in the following environments:
 - Ubuntu 18.04 LTS
 - Google Colab
-- (prod only) [Amazon Linux 2](https://hub.docker.com/layers/aws-lambda-python/amazon/aws-lambda-python/3.7/images/sha256-a329d5a1a30b7fb6adcaae2190a479d47395dac8e8cc31f10068954c62c14965?context=explore)
+- (prod only) [Amazon Linux 2](https://hub.docker.com/layers/aws-lambda-python/amazon/aws-lambda-python/3.8/images/sha256-a329d5a1a30b7fb6adcaae2190a479d47395dac8e8cc31f10068954c62c14965?context=explore)
 - (prod only) [Debian Buster](https://www.debian.org/releases/buster/)
 
 As of writing, support for Windows Subsystem Linux 2 is in alpha.
@@ -133,7 +133,7 @@ So the Python version is mentioned in the following places:
 
 - `environment.yml`, which describes the `conda` environment
 - `.github/workflows/*.yml`, which describe the CI environment
-- `api_server/Dockerfile` and `api_serverless/Dockerfile`, which describe the production app environment
+- `app_gradio/Dockerfile` and `api_serverless/Dockerfile`, which describe the production app environment
 
 Changes need to be synchronized by hand.
 </details>
