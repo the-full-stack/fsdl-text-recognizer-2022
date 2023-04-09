@@ -118,6 +118,7 @@ idna==3.4
 importlib-metadata==5.2.0
     # via
     #   -c requirements/prod.txt
+    #   jupyter-client
     #   markdown
 iniconfig==1.1.1
     # via pytest
@@ -149,16 +150,19 @@ joblib==1.1.0
     # via nltk
 jsonschema==4.4.0
     # via nbformat
-jupyter-client==5.3.5
+jupyter-client==8.1.0
     # via
     #   ipykernel
+    #   nbclient
     #   notebook
-jupyter-core==4.9.2
+jupyter-core==5.3.0
     # via
     #   jupyter-client
     #   nbconvert
     #   nbformat
     #   notebook
+jupyterlab-pygments==0.2.2
+    # via nbconvert
 jupyterlab-widgets==1.1.1
     # via ipywidgets
 kiwisolver==1.4.4
@@ -194,12 +198,19 @@ multidict==6.0.3
     #   -c requirements/prod.txt
     #   aiohttp
     #   yarl
-nbconvert==5.6.1
-    # via notebook
+nbclient==0.5.13
+    # via nbconvert
+nbconvert==6.4.3
+    # via
+    #   -r requirements/dev.in
+    #   notebook
 nbformat==5.3.0
     # via
+    #   nbclient
     #   nbconvert
     #   notebook
+nest-asyncio==1.5.6
+    # via nbclient
 networkx==3.1
     # via
     #   -c requirements/prod.txt
@@ -297,7 +308,9 @@ pillow==8.4.0
     #   -c requirements/prod.txt
     #   matplotlib
 platformdirs==2.5.2
-    # via virtualenv
+    # via
+    #   jupyter-core
+    #   virtualenv
 pluggy==1.0.0
     # via pytest
 pre-commit==2.19.0
@@ -363,7 +376,7 @@ pyyaml==6.0
     #   pre-commit
     #   pytorch-lightning
     #   wandb
-pyzmq==22.3.0
+pyzmq==25.0.2
     # via jupyter-client
 regex==2022.10.31
     # via
@@ -451,7 +464,7 @@ tqdm==4.64.1
     #   -c requirements/prod.txt
     #   nltk
     #   pytorch-lightning
-traitlets==5.1.1
+traitlets==5.9.0
     # via
     #   ipykernel
     #   ipython
@@ -459,6 +472,7 @@ traitlets==5.1.1
     #   jupyter-client
     #   jupyter-core
     #   matplotlib-inline
+    #   nbclient
     #   nbconvert
     #   nbformat
     #   notebook
