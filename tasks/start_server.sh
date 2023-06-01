@@ -21,7 +21,13 @@ fi
 if command -v aws &> /dev/null; then
     echo "AWS CLI is installed."
 else
-    sudo apt install awscli
+    sudo apt-get install --assume-yes awscli
+fi
+
+if command -v ngrok &> /dev/null; then
+    echo "ngrok is installed."
+else
+    curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt-get install --assume-yes ngrok
 fi
 
 aws configure set default.region "$AWS_DEFAULT_REGION"
