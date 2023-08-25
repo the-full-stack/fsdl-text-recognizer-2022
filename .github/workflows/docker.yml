@@ -1,13 +1,6 @@
 name: docker
 
 on:
-  push:
-    branches:
-    - 'main'
-    # rebuild whenever the .devcontainer or the requirements change
-    paths:
-    - '.devcontainer/gpu-from-scratch/**'
-    - 'requirements/**'
   # allows workflows to be triggered manually
   workflow_dispatch:
 
