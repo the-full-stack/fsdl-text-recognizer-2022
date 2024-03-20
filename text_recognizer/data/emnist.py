@@ -130,10 +130,12 @@ def _process_raw_dataset(filename: str, dirname: Path):
         shutil.rmtree("matlab")
 
 
-def _sample_to_balance(x, y):
+def _sample_to_balance(x, y, y_min_element=NUM_SPECIAL_TOKENS):
     """Because the dataset is not balanced, we take at most the mean number of instances per class."""
     np.random.seed(42)
-    num_to_sample = int(np.bincount(y.flatten()).mean())
+    # np.bincount always starts counting from 0, so only take
+    # result for elements that actually occur in y;
+    num_to_sample = int(np.bincount(y.flatten())[y_min_element:].mean())
     all_sampled_inds = []
     for label in np.unique(y.flatten()):
         inds = np.where(y == label)[0]
